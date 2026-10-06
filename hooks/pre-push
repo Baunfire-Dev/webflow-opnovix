@@ -1,0 +1,28 @@
+#!/bin/sh
+
+if ! npm run build --silent >/dev/null 2>&1; then
+    echo ""
+    echo "  X  Build failed - not pushing."
+    echo "     Run 'npm run build' to see the error."
+    echo ""
+    exit 1
+fi
+
+BUNDLES="assets/js/bundles assets/css/bundles"
+
+if ! git diff --quiet HEAD -- $BUNDLES; then
+    echo ""
+    echo "  X  Bundles are stale - not pushing."
+    echo ""
+    echo "     Rebuilding changed these files, so the commit you are pushing"
+    echo "     does not match your source:"
+    echo ""
+    git diff --name-only HEAD -- $BUNDLES | sed 's/^/       /'
+    echo ""
+    echo "     Fix:  git add $BUNDLES && git commit --amend --no-edit"
+    echo "     Then push again."
+    echo ""
+    exit 1
+fi
+
+exit 0

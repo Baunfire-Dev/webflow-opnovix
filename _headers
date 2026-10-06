@@ -1,0 +1,23 @@
+# Cloudflare Pages headers — https://developers.cloudflare.com/pages/configuration/headers/
+#
+# DEVELOPMENT (current): always revalidate, never serve a stale bundle.
+# no-cache does NOT mean "don't cache" — it means "cache, but check with the
+# server before every use". Unchanged files come back as a 304 with no body,
+# so you get freshness without re-downloading 137KB each page load.
+
+/assets/js/bundles/*
+  Cache-Control: no-cache
+
+/assets/css/bundles/*
+  Cache-Control: no-cache
+
+
+# PRODUCTION: swap the two blocks above for the two below once the site is
+# stable. 5 minutes of edge caching, then revalidate. Changes still reach
+# users within 5 minutes without any manual step.
+#
+# /assets/js/bundles/*
+#   Cache-Control: public, max-age=300, must-revalidate
+#
+# /assets/css/bundles/*
+#   Cache-Control: public, max-age=300, must-revalidate
