@@ -1,5 +1,9 @@
 .hero-homepage {
     .hh {
+        &-arrow {
+            @apply cursor-pointer;
+        }
+
         &-superbloom {
             canvas {
                 @apply absolute inset-[-2.5rem] pointer-events-none;

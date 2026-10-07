@@ -1,4 +1,5 @@
 import { defineBlock } from '../app/baunfire.js';
+import { scrollToSection } from '../helpers/scroll.js';
 
 const gsap = window.gsap;
 
@@ -42,7 +43,29 @@ const LAYER = { back: 0, mid: 1, front: 2 };
 
 export default defineBlock('section.hero-homepage', (els) => {
     const script = () => {
-        els.forEach(self => handleMedia(self));
+        els.forEach(self => {
+            handleMedia(self);
+            handleArrow(self);
+        });
+    };
+
+    const handleArrow = (self) => {
+        const arrow = self.querySelector('.hh-arrow');
+        const next = self.nextElementSibling;
+        if (!arrow || !next) return;
+
+        arrow.setAttribute('role', 'button');
+        arrow.setAttribute('tabindex', '0');
+        if (!arrow.getAttribute('aria-label')) arrow.setAttribute('aria-label', 'Scroll to next section');
+
+        const goToNext = () => scrollToSection(next, 0, 1.2);
+
+        arrow.addEventListener('click', goToNext);
+        arrow.addEventListener('keydown', (e) => {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            goToNext();
+        });
     };
 
     const handleMedia = (self) => {

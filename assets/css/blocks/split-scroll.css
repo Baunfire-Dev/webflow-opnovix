@@ -1,0 +1,21 @@
+.split-scroll {
+    &.is-stacked {
+        .ss-panels {
+            @apply grid;
+        }
+
+        .ss-panel {
+            grid-area: 1 / 1;
+        }
+    }
+
+    .ss-track {
+        @apply relative;
+        height: calc(var(--ss-body-h, 0px) + var(--ss-dist, 0px));
+
+        .ss-body {
+            @apply sticky;
+            top: max(0px, calc(50svh - var(--ss-body-h, 0px) / 2));
+        }
+    }
+}
