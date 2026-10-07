@@ -1,0 +1,52 @@
+.fixed-scroll {
+    .fs {
+        &-body {
+            @apply relative;
+        }
+
+        &-octagon {
+            @media (min-width: 62rem) {
+                background: none;
+            }
+        }
+
+        &-graphic {
+            @apply absolute inset-0 pointer-events-none z-[1];
+        }
+
+        &-graphic-sticky {
+            @apply sticky flex items-center justify-center;
+            top: calc(50svh - var(--fs-item-h, 44.375rem) / 2);
+            height: var(--fs-item-h, 44.375rem);
+        }
+
+        &-graphic-box {
+            @apply relative;
+            width: var(--fs-oct-w, min(19.375rem, 60vw));
+            aspect-ratio: 310 / 297;
+
+            svg {
+                @apply block w-full h-auto;
+            }
+        }
+
+        &-graphic-top {
+            @apply absolute left-1/2 top-1/2;
+            width: calc(100% * 355 / 310);
+        }
+
+        &-graphic-stop {
+            stop-color: var(--fs-color);
+        }
+
+        &-graphic-node {
+            fill: var(--fs-color);
+        }
+
+        &-graphic-light {
+            stroke: var(--fs-light);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+        }
+    }
+}

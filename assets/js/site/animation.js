@@ -3,6 +3,7 @@ import baunfire from '../app/baunfire.js';
 export const Animation = {
     init() {
         this.handleNav();
+        this.handleLogo();
     },
 
     handleNav() {
@@ -201,6 +202,41 @@ export const Animation = {
         document.addEventListener("scroll", updateNavScroll, { passive: true });
         window.addEventListener("load", updateNavScroll);
         updateNavScroll();
+    },
+
+    handleLogo() {
+        const logo = document.querySelector(".g-nav-logo");
+        if (!logo) return;
+
+        const paths = [...logo.querySelectorAll("path")];
+        const sparkles = paths.filter(path => path.getAttribute("d")?.startsWith("M90.1553"));
+        const rings = paths.filter(path => path.getAttribute("d")?.startsWith("M87.666"));
+        if (!sparkles.length || !rings.length) return;
+
+        const sparkle = sparkles.pop();
+        const ring = rings.pop();
+        [...sparkles, ...rings].forEach(path => path.remove());
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        ring.before(circle);
+        circle.append(ring, sparkle);
+
+        gsap.set(circle, { svgOrigin: "87.685 12.818" });
+        gsap.set(sparkle, { transformOrigin: "50% 50%" });
+
+        const tl = gsap.timeline({ paused: true })
+            .to(circle, { rotation: 360, duration: 1, ease: "signature" }, 0)
+            .to(sparkle, { scale: 0.4, rotation: 90, duration: 0.4, ease: "power2.inOut" }, 0)
+            .to(sparkle, { scale: 1.4, rotation: 180, duration: 0.6, ease: "power3.out" }, 0.4)
+            .to(sparkle, { scale: 1, duration: 0.7, ease: "respond" }, 1)
+            .set([circle, sparkle], { rotation: 0 }, 1.7);
+
+        const play = () => {
+            if (!tl.isActive()) tl.restart();
+        };
+
+        logo.addEventListener("mouseenter", play);
+        logo.addEventListener("focus", play);
     },
 };
 

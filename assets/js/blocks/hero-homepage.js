@@ -127,6 +127,7 @@ function createSuperbloom(wrapper, canvas, settings) {
         else if (timeline.progress() < 1) timeline.resume();
 
         gsap.ticker.add(render);
+        listenToMouse();
     }
 
     function stop() {
@@ -135,6 +136,22 @@ function createSuperbloom(wrapper, canvas, settings) {
 
         gsap.ticker.remove(render);
         if (timeline && timeline.progress() < 1) timeline.pause();
+        stopListeningToMouse();
+    }
+
+    function listenToMouse() {
+        if (!canHover) return;
+
+        window.addEventListener('pointermove', handlePointerMove, { passive: true });
+        document.documentElement.addEventListener('pointerleave', handlePointerLeave);
+    }
+
+    function stopListeningToMouse() {
+        if (!canHover) return;
+
+        window.removeEventListener('pointermove', handlePointerMove);
+        document.documentElement.removeEventListener('pointerleave', handlePointerLeave);
+        mouse.isOverPage = false;
     }
 
     function handlePointerMove(event) {
@@ -256,11 +273,6 @@ function createSuperbloom(wrapper, canvas, settings) {
 
     new ResizeObserver(resize).observe(canvas);
     resize();
-
-    if (canHover) {
-        window.addEventListener('pointermove', handlePointerMove, { passive: true });
-        document.documentElement.addEventListener('pointerleave', handlePointerLeave);
-    }
 
     new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting) start();

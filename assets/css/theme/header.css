@@ -6,8 +6,6 @@ header {
 			@apply cursor-pointer;
 
 			svg {
-				@apply w-[1.5rem] h-auto;
-
 				path,
 				line,
 				rect {
