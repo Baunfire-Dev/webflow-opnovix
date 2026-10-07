@@ -2,11 +2,25 @@ import { defineBlock } from '../app/baunfire.js';
 
 export default defineBlock('section.split-scroll', (els, baunfire) => {
     const STEP = 0.6;
-    const BLUR = 'blur(6px)';
-    const SHIFT = 16;
+    const STEP_MOBILE = 0.35;
+    const HOLD = 0.2;
 
     const script = () => {
         els.forEach(self => handlePanels(self));
+    };
+
+    const getOpacities = (progress, total) => {
+        const scaled = Math.min(progress, 0.9999) * total;
+        const current = Math.floor(scaled);
+        const local = scaled - current;
+        const fade = local < HOLD ? 0 : (local - HOLD) / (1 - HOLD);
+        const isLast = current === total - 1;
+
+        return Array.from({ length: total }, (_, i) => {
+            if (i === current) return isLast ? 1 : Math.max(0, 1 - fade * 2);
+            if (i === current + 1) return Math.max(0, fade * 2 - 1);
+            return 0;
+        });
     };
 
     const handlePanels = (self) => {
@@ -16,67 +30,49 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
 
         const medias = panels.map(panel => panel.querySelector('.ss-panel-media'));
         const images = panels.map(panel => panel.querySelector('.ss-panel-img'));
-        const lines = panels.map(panel => [...(panel.querySelector('.ss-panel-content')?.children || [])]);
-        let active = 0;
+        const patterns = panels.map(panel => panel.querySelector('.ss-panel-pattern'));
+        const contents = panels.map(panel => panel.querySelector('.ss-panel-content'));
+        const fadeTo = contents.map(content => gsap.quickTo(content, 'opacity', { duration: 0.3, ease: 'power1.out' }));
+        let activeMedia = 0;
 
-        self.classList.add('is-stacked');
-        gsap.set(medias.slice(1), { autoAlpha: 0 });
-        gsap.set(lines.slice(1).flat(), { autoAlpha: 0 });
+        gsap.set(medias.slice(1), { backgroundColor: 'transparent' });
+        gsap.set(patterns.slice(1), { autoAlpha: 0 });
+        gsap.set(images.slice(1), { autoAlpha: 0 });
+        gsap.set(contents.slice(1), { opacity: 0, pointerEvents: 'none' });
+        gsap.set(panels, { opacity: 1 });
 
         const showMedia = (next) => {
-            medias.forEach((media, i) => {
+            images.forEach((image, i) => {
+                if (i === 0) return;
+
                 const isIn = i <= next;
-                gsap.to(media, { autoAlpha: isIn ? 1 : 0, duration: 0.8, ease: 'neutral', overwrite: true });
 
-                if (isIn && i > active) {
-                    gsap.fromTo(images[i], { scale: 0.94 }, { scale: 1, duration: 1.2, ease: 'power3-out', overwrite: true });
+                if (isIn && i > activeMedia) {
+                    gsap.to(image, { autoAlpha: 1, duration: 0.8, ease: 'neutral', overwrite: true });
+                } else if (!isIn) {
+                    gsap.to(image, { autoAlpha: 0, duration: 0.6, ease: 'neutral', overwrite: true });
                 }
             });
+
+            activeMedia = next;
         };
 
-        const showText = (next, dir) => {
-            lines.forEach((group, i) => {
-                if (i === next) return;
+        const update = (progress) => {
+            const opacities = getOpacities(progress, panels.length);
 
-                gsap.to(group, {
-                    autoAlpha: 0,
-                    y: -SHIFT * dir,
-                    filter: BLUR,
-                    duration: 0.35,
-                    stagger: 0.04,
-                    ease: 'power2-out',
-                    overwrite: true
-                });
+            opacities.forEach((opacity, i) => {
+                fadeTo[i](opacity);
+                contents[i].style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
             });
 
-            gsap.fromTo(lines[next],
-                { autoAlpha: 0, y: SHIFT * dir, filter: BLUR },
-                {
-                    autoAlpha: 1,
-                    y: 0,
-                    filter: 'blur(0px)',
-                    duration: 0.7,
-                    delay: 0.2,
-                    stagger: 0.06,
-                    ease: 'power3-out',
-                    overwrite: true
-                }
-            );
-        };
-
-        const show = (next) => {
-            const dir = next > active ? 1 : -1;
-
-            showMedia(next);
-            showText(next, dir);
-            active = next;
+            const nextMedia = Math.min(panels.length - 1, Math.floor(progress * panels.length + (1 - HOLD) / 2));
+            if (nextMedia !== activeMedia) showMedia(nextMedia);
         };
 
         gsap.from(images[0], {
-            scale: 0.9,
             autoAlpha: 0,
-            duration: 1.2,
-            ease: 'power3-out',
+            duration: 1,
+            ease: 'neutral',
             scrollTrigger: {
                 trigger: body,
                 start: baunfire.anim.start,
@@ -91,7 +87,8 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
 
         const measure = () => {
             self.style.setProperty('--ss-body-h', `${body.offsetHeight}px`);
-            self.style.setProperty('--ss-dist', `${window.innerHeight * STEP * panels.length}px`);
+            const step = window.matchMedia('(max-width: 991px)').matches ? STEP_MOBILE : STEP;
+            self.style.setProperty('--ss-dist', `${window.innerHeight * step * panels.length}px`);
         };
 
         const stickyTop = () => parseFloat(getComputedStyle(body).top) || 0;
@@ -104,10 +101,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
             start: () => `top ${stickyTop()}px`,
             end: () => `bottom ${stickyTop() + body.offsetHeight}px`,
             invalidateOnRefresh: true,
-            onUpdate: ({ progress }) => {
-                const next = Math.min(panels.length - 1, Math.floor(progress * panels.length));
-                if (next !== active) show(next);
-            }
+            onUpdate: ({ progress }) => update(progress)
         });
     };
 
