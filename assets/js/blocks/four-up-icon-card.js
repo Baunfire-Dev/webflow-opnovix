@@ -16,7 +16,7 @@ export default defineBlock('section.four-up-icon-card', (els, baunfire) => {
 
         gsap.timeline({
             scrollTrigger: {
-                trigger: card,
+                trigger: self,
                 start: baunfire.anim.start,
                 once: true
             }
