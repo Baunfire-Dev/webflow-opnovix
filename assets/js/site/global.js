@@ -8,6 +8,7 @@ export const Global = {
         this.handleAnchorLinks();
         this.observeCollectionLists();
         this.handleHubspotForms();
+        this.observeForms();
     },
 
     importSwiperScript(callback) {
@@ -167,6 +168,25 @@ export const Global = {
         }
 
         gsap.to(proxy, props);
+    },
+
+    observeForms() {
+        const wraps = document.querySelectorAll(".cf-form");
+        if (!wraps.length) return;
+
+        let raf;
+        const schedule = () => {
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+                this.screenSizeChange();
+            });
+        };
+
+        const ro = new ResizeObserver(schedule);
+
+        wraps.forEach((wrap) => {
+            ro.observe(wrap);
+        });
     },
 
     observeCollectionLists() {

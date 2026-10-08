@@ -205,23 +205,45 @@ export const Animation = {
     },
 
     handleLogo() {
-        const logo = document.querySelector(".g-nav-logo");
-        if (!logo) return;
+        const header = document.querySelector(".g-nav-logo");
+        const footer = document.querySelector(".footer-logo");
 
-        const paths = [...logo.querySelectorAll("path")];
-        const sparkles = paths.filter(path => path.getAttribute("d")?.startsWith("M90.1553"));
-        const rings = paths.filter(path => path.getAttribute("d")?.startsWith("M87.666"));
-        if (!sparkles.length || !rings.length) return;
+        if (header) {
+            const paths = [...header.querySelectorAll("path")];
+            const sparkles = paths.filter(path => path.getAttribute("d")?.startsWith("M90.1553"));
+            const rings = paths.filter(path => path.getAttribute("d")?.startsWith("M87.666"));
 
-        const sparkle = sparkles.pop();
-        const ring = rings.pop();
-        [...sparkles, ...rings].forEach(path => path.remove());
+            if (sparkles.length && rings.length) {
+                const sparkle = sparkles.pop();
+                const ring = rings.pop();
+                [...sparkles, ...rings].forEach(path => path.remove());
 
+                this.animateLogo(header, ring, sparkle, "87.685 12.818");
+            }
+        }
+
+        if (footer) {
+            const ring = [...footer.querySelectorAll("path")].find(path => path.getAttribute("d")?.startsWith("M187.288"));
+            const d = ring?.getAttribute("d") || "";
+            const split = d.indexOf("M192.604");
+
+            if (ring && split > 0) {
+                const sparkle = ring.cloneNode();
+                ring.setAttribute("d", d.slice(0, split));
+                sparkle.setAttribute("d", d.slice(split));
+                ring.after(sparkle);
+
+                this.animateLogo(footer.closest("a") || footer, ring, sparkle, "187.329 27.385");
+            }
+        }
+    },
+
+    animateLogo(trigger, ring, sparkle, origin) {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "g");
         ring.before(circle);
         circle.append(ring, sparkle);
 
-        gsap.set(circle, { svgOrigin: "87.685 12.818" });
+        gsap.set(circle, { svgOrigin: origin });
         gsap.set(sparkle, { transformOrigin: "50% 50%" });
 
         const tl = gsap.timeline({ paused: true })
@@ -235,8 +257,8 @@ export const Animation = {
             if (!tl.isActive()) tl.restart();
         };
 
-        logo.addEventListener("mouseenter", play);
-        logo.addEventListener("focus", play);
+        trigger.addEventListener("mouseenter", play);
+        trigger.addEventListener("focus", play);
     },
 };
 
