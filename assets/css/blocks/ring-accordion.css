@@ -1,0 +1,153 @@
+.ring-accordion {
+    --ra-ring-ease: cubic-bezier(0.65, 0, 0.35, 1); /* ease in-out for the ring draw */
+    --ra-ring-bg: #5b183f;                          /* match the section background */
+
+    /* ---------- Light ring ---------- */
+    .ra-ring-container {
+        .ra-ring-labels {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 0 18%; /* keep long titles inside the ring */
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .ra-ring {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible; /* let the glow bleed past the viewBox */
+        }
+
+        /* Draw from previous stop to new stop — same 0.8s as the content open */
+        .ra-ring-progress {
+            transition: stroke-dashoffset 0.8s var(--ra-ring-ease);
+        }
+
+        .ra-ring-stop {
+            fill: var(--ra-ring-bg);
+            stroke: rgba(255, 255, 255, 0.4);
+            transform-box: fill-box;
+            transform-origin: center;
+            transition:
+                fill 0.4s var(--cubic-ease),
+                stroke 0.4s var(--cubic-ease),
+                transform 0.4s var(--cubic-ease);
+
+            &.is-passed {
+                fill: #f9a98a;
+                stroke: transparent;
+            }
+
+            &.is-active {
+                fill: #ff696a;
+                stroke: transparent;
+                transform: scale(1.45);
+            }
+        }
+
+        .ra-ring-glow {
+            opacity: 0;
+            transition: opacity 0.3s var(--cubic-ease);
+
+            &.is-visible {
+                opacity: 1;
+            }
+        }
+
+        .ra-ring-label {
+            transition: opacity 0.2s var(--cubic-ease);
+
+            &.is-hidden {
+                opacity: 0;
+            }
+        }
+
+        .ra-ring-title {
+            color: #fff;
+        }
+
+        .ra-ring-count {
+            color: rgba(255, 255, 255, 0.52);
+        }
+    }
+
+    /* ---------- Accordion ---------- */
+    .ra-acc-items {
+        .ra-item {
+            #ra-item-number {
+                opacity: 0.52;
+                transition: opacity 0.4s var(--cubic-ease);
+            }
+
+            .ra-item-title {
+                span {
+                    opacity: 0.84;
+                    transition: font-size 0.4s var(--cubic-ease), opacity 0.4s var(--cubic-ease);
+                }
+            }
+
+            .ra-item-inner {
+                .ra-item-content {
+                    grid-template-rows: 0fr;
+                    transition: grid-template-rows 0.8s var(--cubic-ease);
+
+                    .ra-item-content-outer {
+                        min-height: 0;
+                        overflow: hidden;
+                    }
+                }
+            }
+
+            .ra-item-icon {
+                opacity: 0.52;
+                transition: opacity 0.8s var(--cubic-ease), transform 0.8s var(--cubic-ease);
+
+                .ra-item-icon-vertical {
+                    scale: 0;
+                    transition: scale 0.8s var(--cubic-ease);
+                }
+            }
+
+            &.active {
+                #ra-item-number {
+                    opacity: 1;
+                }
+
+                .ra-item-title {
+                    span {
+                        opacity: 1;
+                        font-size: var(--_typography---size--h4);
+                    }
+                }
+
+                .ra-item-inner {
+                    .ra-item-content {
+                        grid-template-rows: 1fr;
+                    }
+                }
+
+                .ra-item-icon {
+                    opacity: 1;
+                    transform: rotate(360deg);
+
+                    .ra-item-icon-vertical {
+                        scale: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ra-ring *,
+        .ra-acc-items * {
+            transition-duration: 0s !important;
+        }
+    }
+}
