@@ -150,14 +150,4 @@ header {
 			}
 		}
 	}
-
-	&.nav-scrolling-down.nav-scrolled:not(.mob-active):not(
-			:has(.g-nav-link.open)
-		) {
-		@apply pointer-events-none translate-y-[-100%];
-	}
-
-	&.nav-scrolled {
-		background: var(--_palette---neutral--white);
-	}
 }

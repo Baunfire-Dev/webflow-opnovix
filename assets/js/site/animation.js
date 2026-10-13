@@ -18,25 +18,6 @@ export const Animation = {
         const parents = [...links].filter(link => link.querySelector(".g-nav-dd"));
         const singles = [...links].filter(link => !link.querySelector(".g-nav-dd"));
 
-        const updateNavScroll = () => {
-            const currentScrollY = window.scrollY;
-            const direction = currentScrollY > lastScrollY ? "down" : currentScrollY < lastScrollY ? "up" : null;
-            const scrolled = currentScrollY > 20;
-
-            if (scrolled !== isScrolled) {
-                nav.classList.toggle("nav-scrolled", scrolled);
-                isScrolled = scrolled;
-            }
-
-            if (direction && direction !== scrollDirection) {
-                nav.classList.toggle("nav-scrolling-down", direction === "down");
-                nav.classList.toggle("nav-scrolling-up", direction === "up");
-                scrollDirection = direction;
-            }
-
-            lastScrollY = currentScrollY;
-        };
-
         const stateReset = () => {
             parents.forEach(p => p.classList.remove("open", "mob-open"));
         };
@@ -198,10 +179,6 @@ export const Animation = {
 
         desktopDD();
         mobilePanel();
-
-        document.addEventListener("scroll", updateNavScroll, { passive: true });
-        window.addEventListener("load", updateNavScroll);
-        updateNavScroll();
     },
 
     handleLogo() {
