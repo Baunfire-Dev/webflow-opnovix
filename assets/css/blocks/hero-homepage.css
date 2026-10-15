@@ -1,4 +1,11 @@
 .hero-homepage {
+    .w-mod-js & {
+        .hh-content-inner > *,
+        .hh-ctas {
+            @apply invisible opacity-0;
+        }
+    }
+
     .hh {
         &-arrow {
             @apply cursor-pointer;

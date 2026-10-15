@@ -1,3 +1,13 @@
 .footer {
 	
 }
+
+.g-footer {
+	overflow: clip;
+}
+
+.footer-graphic {
+	&-img svg {
+		@apply overflow-visible pointer-events-none;
+	}
+}

@@ -1,0 +1,33 @@
+.g-btn {
+	--btn-glow-left: 255 92 92;
+	--btn-glow-right: 255 178 74;
+	--btn-glow-strength: 0.75;
+	--btn-glow-blur: 1.5rem;
+	--btn-glow-duration: 0.6s;
+	--btn-glow-ease: cubic-bezier(0.25, 1, 0.5, 1);
+
+	@apply relative isolate;
+
+	&::before {
+		@apply absolute inset-[-1px] -z-10 pointer-events-none opacity-0;
+		content: "";
+		border-radius: inherit;
+		box-shadow:
+			-0.625rem 0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-left) / var(--btn-glow-strength)),
+			0.625rem -0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-right) / var(--btn-glow-strength));
+		transition: opacity var(--btn-glow-duration) var(--btn-glow-ease);
+		will-change: opacity;
+	}
+
+	&:not(.w-variant-f167cb2a-5f28-629c-135a-70c5e8b294ee, [aria-disabled="true"], .is-disabled) {
+		&:focus-visible::before {
+			@apply opacity-100;
+		}
+
+		@media (hover: hover) {
+			&:hover::before {
+				@apply opacity-100;
+			}
+		}
+	}
+}

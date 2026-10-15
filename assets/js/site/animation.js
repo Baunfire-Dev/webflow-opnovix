@@ -4,6 +4,7 @@ export const Animation = {
     init() {
         this.handleNav();
         this.handleLogo();
+        this.handleFooterGraphic();
     },
 
     handleNav() {
@@ -192,10 +193,10 @@ export const Animation = {
 
             if (sparkles.length && rings.length) {
                 const sparkle = sparkles.pop();
-                const ring = rings.pop();
+                rings.pop();
                 [...sparkles, ...rings].forEach(path => path.remove());
 
-                this.animateLogo(header, ring, sparkle, "87.685 12.818");
+                this.animateLogo(header, sparkle, "87.685 12.818");
             }
         }
 
@@ -210,25 +211,24 @@ export const Animation = {
                 sparkle.setAttribute("d", d.slice(split));
                 ring.after(sparkle);
 
-                this.animateLogo(footer.closest("a") || footer, ring, sparkle, "187.329 27.385");
+                this.animateLogo(footer.closest("a") || footer, sparkle, "187.329 27.385");
             }
         }
     },
 
-    animateLogo(trigger, ring, sparkle, origin) {
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        ring.before(circle);
-        circle.append(ring, sparkle);
+    animateLogo(trigger, sparkle, origin) {
+        const orbit = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        sparkle.before(orbit);
+        orbit.append(sparkle);
 
-        gsap.set(circle, { svgOrigin: origin });
+        gsap.set(orbit, { svgOrigin: origin });
         gsap.set(sparkle, { transformOrigin: "50% 50%" });
 
         const tl = gsap.timeline({ paused: true })
-            .to(circle, { rotation: 360, duration: 1, ease: "signature" }, 0)
-            .to(sparkle, { scale: 0.4, rotation: 90, duration: 0.4, ease: "power2.inOut" }, 0)
-            .to(sparkle, { scale: 1.4, rotation: 180, duration: 0.6, ease: "power3.out" }, 0.4)
-            .to(sparkle, { scale: 1, duration: 0.7, ease: "respond" }, 1)
-            .set([circle, sparkle], { rotation: 0 }, 1.7);
+            .to(orbit, { rotation: 360, duration: 1, ease: "signature" }, 0)
+            .to(sparkle, { rotation: 180, duration: 1, ease: "signature" }, 0)
+            .to(sparkle, { keyframes: { scale: [0.4, 1.4, 1], easeEach: "sine.inOut" }, duration: 1.2, ease: "none" }, 0)
+            .set([orbit, sparkle], { rotation: 0 }, 1.2);
 
         const play = () => {
             if (!tl.isActive()) tl.restart();
@@ -236,6 +236,119 @@ export const Animation = {
 
         trigger.addEventListener("mouseenter", play);
         trigger.addEventListener("focus", play);
+    },
+    handleFooterGraphic() {
+        const footer = document.querySelector("footer.g-footer");
+        const svg = footer?.querySelector(".footer-graphic-img svg");
+        if (!svg) return;
+
+        const hexes = [...svg.querySelectorAll("path")];
+        if (!hexes.length) return;
+
+        const EXPLODE = {
+            fragments: 2,
+            minDistance: 0.08,
+            maxDistance: 0.35,
+            spread: 0.45,
+            hexScale: [0.25, 0.45],
+            fragmentScale: [0.12, 0.3],
+            rotation: 120,
+            opacity: [0.35, 1],
+            duration: 1.6,
+            stagger: 0,
+            ease: "expo-out",
+            reformSpeed: 1.6,
+            bottomOffset: 4,
+            seed: 2026
+        };
+
+        const createRandom = (seed) => {
+            let state = seed;
+
+            return () => {
+                state |= 0;
+                state = state + 0x6D2B79F5 | 0;
+                let value = Math.imul(state ^ state >>> 15, 1 | state);
+                value = value + Math.imul(value ^ value >>> 7, 61 | value) ^ value;
+                return ((value ^ value >>> 14) >>> 0) / 4294967296;
+            };
+        };
+
+        const between = (random, [min, max]) => min + random() * (max - min);
+
+        const getDistance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+        const createPieces = (hex) => {
+            const bounds = hex.getBBox();
+            const origin = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+
+            const fragments = Array.from({ length: EXPLODE.fragments }, () => {
+                const fragment = hex.cloneNode();
+                hex.after(fragment);
+                return { el: fragment, origin, isFragment: true };
+            });
+
+            return [{ el: hex, origin, isFragment: false }, ...fragments];
+        };
+
+        const random = createRandom(EXPLODE.seed);
+        const view = svg.viewBox.baseVal;
+        const size = Math.max(view.width, view.height);
+        const center = { x: view.x + view.width / 2, y: view.y + view.height / 2 };
+        const pieces = hexes.flatMap(hex => createPieces(hex));
+        const tl = gsap.timeline({ paused: true });
+
+        gsap.set(pieces.map(piece => piece.el), { transformOrigin: "50% 50%" });
+
+        pieces.forEach(piece => {
+            const outward = Math.atan2(piece.origin.y - center.y, piece.origin.x - center.x);
+            const angle = outward + (random() * 2 - 1) * EXPLODE.spread;
+            const closeness = Math.min(1, getDistance(piece.origin, center) / (size / 2));
+            const reach = (closeness + random()) / 2;
+            const distance = size * (EXPLODE.minDistance + (EXPLODE.maxDistance - EXPLODE.minDistance) * reach);
+            const delay = EXPLODE.stagger * closeness;
+
+            const to = {
+                x: Math.cos(angle) * distance,
+                y: Math.sin(angle) * distance,
+                rotation: (random() * 2 - 1) * EXPLODE.rotation,
+                scale: between(random, piece.isFragment ? EXPLODE.fragmentScale : EXPLODE.hexScale),
+                opacity: between(random, EXPLODE.opacity),
+                duration: EXPLODE.duration,
+                ease: EXPLODE.ease
+            };
+
+            if (piece.isFragment) tl.fromTo(piece.el, { x: 0, y: 0, rotation: 0, scale: 0, opacity: 0 }, to, delay);
+            else tl.to(piece.el, to, delay);
+        });
+
+        let isExploded = false;
+
+        const setExploded = (state) => {
+            if (state === isExploded) return;
+            isExploded = state;
+
+            if (state) tl.timeScale(1).play();
+            else tl.timeScale(EXPLODE.reformSpeed).reverse();
+        };
+
+        const lenis = window.__lenis;
+
+        if (lenis) {
+            const check = () => setExploded(lenis.targetScroll >= lenis.limit - EXPLODE.bottomOffset);
+            lenis.on("scroll", check);
+            check();
+            return;
+        }
+
+        if (!window.ScrollTrigger) return;
+
+        ScrollTrigger.create({
+            trigger: footer,
+            start: `bottom bottom+=${EXPLODE.bottomOffset}`,
+            onEnter: () => setExploded(true),
+            onLeaveBack: () => setExploded(false)
+        });
     },
 };
 

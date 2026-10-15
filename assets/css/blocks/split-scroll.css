@@ -7,5 +7,13 @@
             @apply sticky;
             top: max(0px, calc(50svh - var(--ss-body-h, 0px) / 2));
         }
+
+        .ss-panels {
+            @apply grid;
+        }
+
+        .ss-panel {
+            grid-area: 1 / 1;
+        }
     }
 }

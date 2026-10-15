@@ -1,0 +1,72 @@
+.proof-outcomes {
+    .po {
+        &-chart,
+        &-wafer {
+            @apply relative w-full;
+            color: var(--_palette---neutral--graphite);
+
+            :where(svg text) {
+                fill: currentColor;
+            }
+        }
+
+        &-chart.is-compact .po-legend {
+            @apply static w-auto flex-row flex-wrap;
+            gap: var(--_spacing---space--2xs) var(--_spacing---space--xs);
+            margin-top: var(--_spacing---space--xs);
+        }
+
+        &-svg,
+        &-wafer-svg {
+            @apply block overflow-visible;
+        }
+
+        &-grid line {
+            stroke: var(--_palette---neutral--stone);
+            stroke-width: 1;
+        }
+
+        &-bracket-line {
+            fill: none;
+            stroke: var(--_palette---brand--plum);
+            stroke-width: 1;
+        }
+
+        &-pill {
+            rect {
+                fill: var(--_palette---brand--plum);
+            }
+
+            text {
+                fill: var(--_palette---neutral--white);
+            }
+        }
+
+        &-legend {
+            @apply absolute flex flex-col m-0 p-0 list-none;
+            top: 1.625rem;
+            left: calc(100% - 12.75rem);
+            width: 12.625rem;
+            gap: 1.594rem;
+        }
+
+        &-legend-item {
+            @apply flex items-center;
+            gap: var(--_spacing---space--3xs);
+        }
+
+        &-legend-marker {
+            @apply flex-none;
+        }
+
+        &-wafer-dot {
+            fill: currentColor;
+        }
+
+        &-wafer-leader {
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1;
+        }
+    }
+}

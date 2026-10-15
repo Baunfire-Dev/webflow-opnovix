@@ -36,7 +36,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
         let activeMedia = 0;
 
         gsap.set(medias.slice(1), { backgroundColor: 'transparent' });
-        gsap.set(patterns.slice(1), { autoAlpha: 0 });
+        patterns.slice(1).forEach(pattern => pattern && gsap.set(pattern, { autoAlpha: 0 }));
         gsap.set(images.slice(1), { autoAlpha: 0 });
         gsap.set(contents.slice(1), { opacity: 0, pointerEvents: 'none' });
         gsap.set(panels, { opacity: 1 });
