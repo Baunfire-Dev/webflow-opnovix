@@ -7,7 +7,6 @@ export default defineBlock('section.proof-outcomes', (els) => {
     const X_AXIS = {
         min: 700,
         max: 765,
-        ticks: [700, 720, 740, 760],
         title: 'Growth temp (°C)'
     };
 
@@ -15,13 +14,13 @@ export default defineBlock('section.proof-outcomes', (els) => {
         min: 420,
         max: 580,
         floor: 410,
-        ticks: [420, 460, 500, 540, 580],
         title: 'nm'
     };
 
     const SERIES = [
         {
             label: 'GaN (control)',
+            short: 'GaN',
             color: '#96877A',
             stroke: 2,
             marker: 9,
@@ -31,6 +30,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
         },
         {
             label: '~8% Native InGaN®*',
+            short: '~8%*',
             color: 'var(--_palette---brand--amber)',
             stroke: 2,
             marker: 9,
@@ -40,6 +40,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
         },
         {
             label: '~13% Native InGaN®*',
+            short: '~13% Native InGaN®*',
             color: 'var(--_palette---brand--coral)',
             stroke: 2.5,
             marker: 11,
@@ -49,16 +50,41 @@ export default defineBlock('section.proof-outcomes', (els) => {
         }
     ];
 
-    const BRACKET = {
-        from: 507.4,
-        to: 420.8,
-        labelAt: 467,
-        label: '~80 nm'
-    };
+    const BRACKET_LABEL = '~80 nm';
 
     const LAYOUT = {
-        wide: { top: 41.56, bottom: 322.44, left: 40, right: 230, bracketGap: 28, pillGap: 24 },
-        compact: { top: 41.56, bottom: 282, left: 40, right: 96, bracketGap: 14, pillGap: 10 }
+        wide: {
+            top: 41.56,
+            bottom: 322.44,
+            left: 40,
+            gridLeft: 40,
+            right: 230,
+            xTicks: [700, 720, 740, 760],
+            yTicks: [420, 460, 500, 540, 580],
+            unit: '',
+            titles: true,
+            labelOffset: 17,
+            pad: 40,
+            marker: null,
+            bracket: { from: 507.4, to: 420.8, labelAt: 467, gap: 28, pillGap: 24, stroke: 1, arrows: true },
+            pill: { padX: 10, height: 22 }
+        },
+        compact: {
+            top: 18.78,
+            bottom: 191.22,
+            left: 37.55,
+            gridLeft: 30,
+            right: 4,
+            xTicks: [700, 730, 760],
+            yTicks: [420, 500, 580],
+            unit: '°',
+            titles: false,
+            labelOffset: 17,
+            pad: 28,
+            marker: 8,
+            bracket: { at: 740, from: 538, to: 470, labelAt: 504, pillGap: 8, stroke: 1.5, arrows: false },
+            pill: { padX: 8, height: 20 }
+        }
     };
 
     const WAFER = {
@@ -73,8 +99,11 @@ export default defineBlock('section.proof-outcomes', (els) => {
             rim: 'var(--_palette---brand--coral)',
             gradient: ['var(--_palette---brand--peach)', 'color-mix(in srgb, var(--_palette---brand--coral) 85%, white)', 'color-mix(in srgb, var(--_palette---brand--coral) 70%, white)']
         },
-        drop: 12
+        drop: 12,
+        compact: { below: 400, width: 200, pad: 8 }
     };
+
+    const WAFER_CAPTION = 'Relaxed Native InGaN® on substrate';
 
     const WAFER_LABELS = [
         { text: 'Relaxed Native InGaN®', lines: ['Relaxed Native', 'InGaN®'], y: 16.5, dot: [192.8, 114.6], onLayer: true },
@@ -82,6 +111,12 @@ export default defineBlock('section.proof-outcomes', (els) => {
     ];
 
     const LEADER = { gap: 8, run: 26.6, elbow: 6, clearance: 12, dot: 2.5, lineHeight: 14 };
+
+    const FOOTNOTE = 'Photoluminescence from matched quantum-well growths on GaN vs. Native InGaN® templates. *Approximate InN mole fractions, shown for reference.';
+
+    const ATTRIBUTES = ['MOCVD grown', 'Several microns thick', 'Smooth & pit-free', 'Substrate-flexible'];
+
+    const ATTRIBUTE_ICON = { width: 12, color: 'var(--_palette---brand--coral)' };
 
     const COMPACT_BELOW = 640;
     const DASH = '4 3';
@@ -106,8 +141,10 @@ export default defineBlock('section.proof-outcomes', (els) => {
                 const layout = isCompact ? LAYOUT.compact : LAYOUT.wide;
 
                 mount.classList.toggle('is-compact', isCompact);
-                mount.innerHTML = chartHTML(id, width, layout) + legendHTML();
-                fitPill(mount);
+                mount.innerHTML = isCompact
+                    ? legendHTML(isCompact) + chartHTML(id, width, layout) + footnoteHTML()
+                    : chartHTML(id, width, layout) + legendHTML(isCompact) + footnoteHTML();
+                fitPill(mount, layout);
             },
             hide: setHidden,
             animate: buildTimeline
@@ -122,8 +159,11 @@ export default defineBlock('section.proof-outcomes', (els) => {
 
         createGraphic(mount, {
             render: (width) => {
-                mount.innerHTML = waferHTML(id, width);
-                placeLeaders(mount, width);
+                const isCompact = width < WAFER.compact.below;
+
+                mount.classList.toggle('is-compact', isCompact);
+                mount.innerHTML = waferHTML(id, width, isCompact) + attributesHTML();
+                if (!isCompact) placeLeaders(mount, width);
             },
             hide: setWaferHidden,
             animate: buildWaferTimeline
@@ -168,15 +208,15 @@ export default defineBlock('section.proof-outcomes', (els) => {
     const chartHTML = (id, width, layout) => {
         const scale = createScale(width, layout);
         const floorY = scale.y(Y_AXIS.floor);
-        const height = floorY + 40;
+        const height = floorY + layout.pad;
 
         return `
             <svg class="po-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Peak wavelength versus growth temperature">
                 <defs>${SERIES.map((series, i) => defsHTML(id, i, series, scale, height)).join('')}</defs>
-                ${gridHTML(scale, floorY)}
+                ${gridHTML(scale, floorY, layout)}
                 <g class="po-areas">${SERIES.map((series, i) => areaHTML(id, i, series, scale, floorY)).join('')}</g>
                 <g class="po-lines">${SERIES.map((series, i) => lineHTML(id, i, series, scale)).join('')}</g>
-                <g class="po-markers">${SERIES.map(series => markersHTML(series, scale)).join('')}</g>
+                <g class="po-markers">${SERIES.map(series => markersHTML(series, scale, layout.marker || series.marker)).join('')}</g>
                 ${bracketHTML(scale, layout)}
             </svg>
         `;
@@ -192,17 +232,19 @@ export default defineBlock('section.proof-outcomes', (els) => {
         </clipPath>
     `;
 
-    const gridHTML = (scale, floorY) => `
+    const gridHTML = (scale, floorY, layout) => `
         <g class="po-grid">
-            ${Y_AXIS.ticks.map(tick => `
-                <line x1="${scale.left}" x2="${scale.plotRight}" y1="${scale.y(tick)}" y2="${scale.y(tick)}" />
-                <text class="g-caption" x="${scale.left - 8}" y="${scale.y(tick)}" text-anchor="end" dominant-baseline="middle">${tick}</text>
+            ${layout.yTicks.map(tick => `
+                <line x1="${layout.gridLeft}" x2="${scale.plotRight}" y1="${scale.y(tick)}" y2="${scale.y(tick)}" />
+                <text class="po-tick g-caption" x="${layout.gridLeft - 8}" y="${scale.y(tick)}" text-anchor="end" dominant-baseline="middle">${tick}</text>
             `).join('')}
-            <text class="g-caption" x="${scale.left - 8}" y="7" text-anchor="end" dominant-baseline="middle">${Y_AXIS.title}</text>
-            ${X_AXIS.ticks.map(tick => `
-                <text class="g-caption" x="${scale.x(tick)}" y="${floorY + 17}" text-anchor="middle" dominant-baseline="middle">${tick}</text>
+            ${layout.xTicks.map(tick => `
+                <text class="po-tick g-caption" x="${scale.x(tick)}" y="${floorY + layout.labelOffset}" text-anchor="middle" dominant-baseline="middle">${tick}${layout.unit}</text>
             `).join('')}
-            <text class="g-caption" x="${(scale.left + scale.plotRight) / 2}" y="${floorY + 35}" text-anchor="middle" dominant-baseline="middle">${X_AXIS.title}</text>
+            ${layout.titles ? `
+                <text class="g-caption" x="${layout.gridLeft - 8}" y="7" text-anchor="end" dominant-baseline="middle">${Y_AXIS.title}</text>
+                <text class="g-caption" x="${(layout.gridLeft + scale.plotRight) / 2}" y="${floorY + layout.labelOffset * 2 + 1}" text-anchor="middle" dominant-baseline="middle">${X_AXIS.title}</text>
+            ` : ''}
         </g>
     `;
 
@@ -235,47 +277,71 @@ export default defineBlock('section.proof-outcomes', (els) => {
         `;
     };
 
-    const markersHTML = (series, scale) => series.measured.map(([temp, nm]) => `
-        <polygon class="po-marker" points="${hexPoints(scale.x(temp), scale.y(fitValue(series, temp)), series.marker)}" style="fill: ${series.color}" />
+    const markersHTML = (series, scale, size) => series.measured.map(([temp]) => `
+        <polygon class="po-marker" points="${hexPoints(scale.x(temp), scale.y(fitValue(series, temp)), size)}" style="fill: ${series.color}" />
     `).join('');
 
     const bracketHTML = (scale, layout) => {
-        const x = scale.plotRight + layout.bracketGap;
-        const top = scale.y(BRACKET.from);
-        const bottom = scale.y(BRACKET.to);
-        const pillY = scale.y(BRACKET.labelAt);
-        const pillX = x + layout.pillGap;
+        const { bracket, pill } = layout;
+        const x = bracket.at ? scale.x(bracket.at) : scale.plotRight + bracket.gap;
+        const top = scale.y(bracket.from);
+        const bottom = scale.y(bracket.to);
+        const pillY = scale.y(bracket.labelAt);
+        const pillX = x + bracket.pillGap;
+        const arrows = bracket.arrows ? `M${x - 4} ${top + 5}L${x} ${top}L${x + 4} ${top + 5}M${x - 4} ${bottom - 5}L${x} ${bottom}L${x + 4} ${bottom - 5}` : '';
 
         return `
             <g class="po-bracket">
-                <path class="po-bracket-line" d="M${x} ${top}V${bottom}M${x - 4} ${top + 5}L${x} ${top}L${x + 4} ${top + 5}M${x - 4} ${bottom - 5}L${x} ${bottom}L${x + 4} ${bottom - 5}" />
+                <path class="po-bracket-line" d="M${x} ${top}V${bottom}${arrows}" stroke-width="${bracket.stroke}" />
                 <g class="po-pill">
-                    <rect x="${pillX}" y="${pillY - 11}" width="66" height="22" rx="11" />
-                    <text class="g-caption" x="${pillX + 10}" y="${pillY}" dominant-baseline="middle">${BRACKET.label}</text>
+                    <rect x="${pillX}" y="${pillY - pill.height / 2}" width="66" height="${pill.height}" rx="${pill.height / 2}" />
+                    <text class="g-caption" x="${pillX + pill.padX}" y="${pillY}" dominant-baseline="middle">${BRACKET_LABEL}</text>
                 </g>
             </g>
         `;
     };
 
-    const legendHTML = () => `
+    const legendHTML = (isCompact) => `
         <ul class="po-legend">
             ${[...SERIES].reverse().map(series => `
                 <li class="po-legend-item">
-                    <svg class="po-legend-marker" width="9" height="8" viewBox="0 0 9 8" aria-hidden="true">
-                        <polygon points="${hexPoints(4.5, 4, 9)}" style="fill: ${series.color}" />
-                    </svg>
-                    <span class="g-caption">${series.label}</span>
+                    ${isCompact
+                        ? `<span class="po-legend-line" style="background: ${series.color}"></span>`
+                        : `<svg class="po-legend-marker" width="9" height="8" viewBox="0 0 9 8" aria-hidden="true">
+                            <polygon points="${hexPoints(4.5, 4, 9)}" style="fill: ${series.color}" />
+                        </svg>`}
+                    <span class="g-caption">${isCompact ? series.short : series.label}</span>
                 </li>
             `).join('')}
         </ul>
     `;
 
-    const fitPill = (mount) => {
+    const footnoteHTML = () => `<p class="po-footnote g-caption">${FOOTNOTE}</p>`;
+
+    const attributesHTML = () => {
+        const { width, color } = ATTRIBUTE_ICON;
+        const height = round(width * Math.sqrt(3) / 2);
+
+        return `
+            <ul class="po-attributes">
+                ${ATTRIBUTES.map(text => `
+                    <li class="po-attribute">
+                        <svg class="po-attribute-icon" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" aria-hidden="true">
+                            <polygon points="${hexPoints(width / 2, height / 2, width)}" style="fill: ${color}" />
+                        </svg>
+                        <span class="g-caption">${text.replace('&', '&amp;')}</span>
+                    </li>
+                `).join('')}
+            </ul>
+        `;
+    };
+
+    const fitPill = (mount, layout) => {
         const rect = mount.querySelector('.po-pill rect');
         const text = mount.querySelector('.po-pill text');
         if (!rect || !text) return;
 
-        rect.setAttribute('width', text.getBBox().width + 20);
+        rect.setAttribute('width', text.getBBox().width + layout.pill.padX * 2);
     };
 
     const setHidden = (mount) => {
@@ -296,11 +362,30 @@ export default defineBlock('section.proof-outcomes', (els) => {
             .to(mount.querySelector('.po-bracket'), { opacity: 1, duration: 0.4, ease: 'power1.out' });
     };
 
-    const waferHTML = (id, width) => {
+    const waferFrame = (width, isCompact) => {
+        const { disc, substrate, layer, compact } = WAFER;
+
+        if (!isCompact) {
+            const scale = Math.min(1, width / WAFER.width);
+            return { scale, x: width - WAFER.width * scale, y: 0, height: WAFER.height * scale };
+        }
+
+        const scale = compact.width / (disc.rx * 2);
+        const top = layer.cy - disc.ry;
+        const bottom = substrate.cy + substrate.depth + disc.ry;
+
+        return {
+            scale,
+            x: (width - compact.width) / 2 - disc.x * scale,
+            y: compact.pad - top * scale,
+            height: (bottom - top) * scale + compact.pad * 2
+        };
+    };
+
+    const waferHTML = (id, width, isCompact) => {
         const { disc, substrate, layer } = WAFER;
-        const scale = Math.min(1, width / WAFER.width);
-        const offset = width - WAFER.width * scale;
-        const height = WAFER.height * scale;
+        const frame = waferFrame(width, isCompact);
+        const { scale, height } = frame;
         const [from, mid, to] = layer.gradient;
 
         const disc3d = (cy, depth, top, side, rim = 'none') => `
@@ -309,34 +394,39 @@ export default defineBlock('section.proof-outcomes', (els) => {
             <ellipse cx="${disc.x + disc.rx}" cy="${cy}" rx="${disc.rx}" ry="${disc.ry}" style="fill: ${top}; stroke: ${rim}" />
         `;
 
-        const dotHTML = (label) => `<circle class="po-wafer-dot" cx="${label.dot[0]}" cy="${label.dot[1]}" r="${LEADER.dot}" />`;
+        const dotHTML = (label) => isCompact ? '' : `<circle class="po-wafer-dot" cx="${label.dot[0]}" cy="${label.dot[1]}" r="${LEADER.dot}" />`;
+
+        const labelsHTML = () => WAFER_LABELS.map((label, i) => `
+            <g class="po-wafer-label${label.onLayer ? ' is-layer' : ''}" data-index="${i}">
+                <text class="g-caption" x="0" y="${round(label.y * scale)}" dominant-baseline="middle">${label.text}</text>
+                <path class="po-wafer-leader" d="" />
+            </g>
+        `).join('');
 
         return `
-            <svg class="po-wafer-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Relaxed Native InGaN layer on a substrate">
-                <defs>
-                    <linearGradient id="${id}-layer" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0" style="stop-color: ${from}" />
-                        <stop offset="0.55" style="stop-color: ${mid}" />
-                        <stop offset="1" style="stop-color: ${to}" />
-                    </linearGradient>
-                </defs>
-                <g transform="translate(${round(offset)} 0) scale(${round(scale * 1000) / 1000})">
-                    <g class="po-wafer-substrate">
-                        ${disc3d(substrate.cy, substrate.depth, substrate.top, substrate.side)}
-                        ${WAFER_LABELS.filter(label => !label.onLayer).map(dotHTML).join('')}
+            <div class="po-wafer-figure">
+                <svg class="po-wafer-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Relaxed Native InGaN layer on a substrate">
+                    <defs>
+                        <linearGradient id="${id}-layer" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0" style="stop-color: ${from}" />
+                            <stop offset="0.55" style="stop-color: ${mid}" />
+                            <stop offset="1" style="stop-color: ${to}" />
+                        </linearGradient>
+                    </defs>
+                    <g transform="translate(${round(frame.x)} ${round(frame.y)}) scale(${round(scale * 1000) / 1000})">
+                        <g class="po-wafer-substrate">
+                            ${disc3d(substrate.cy, substrate.depth, substrate.top, substrate.side)}
+                            ${WAFER_LABELS.filter(label => !label.onLayer).map(dotHTML).join('')}
+                        </g>
+                        <g class="po-wafer-layer">
+                            ${disc3d(layer.cy, layer.depth, `url(#${id}-layer)`, layer.body, layer.rim)}
+                            ${WAFER_LABELS.filter(label => label.onLayer).map(dotHTML).join('')}
+                        </g>
                     </g>
-                    <g class="po-wafer-layer">
-                        ${disc3d(layer.cy, layer.depth, `url(#${id}-layer)`, layer.body, layer.rim)}
-                        ${WAFER_LABELS.filter(label => label.onLayer).map(dotHTML).join('')}
-                    </g>
-                </g>
-                ${WAFER_LABELS.map((label, i) => `
-                    <g class="po-wafer-label${label.onLayer ? ' is-layer' : ''}" data-index="${i}">
-                        <text class="g-caption" x="0" y="${round(label.y * scale)}" dominant-baseline="middle">${label.text}</text>
-                        <path class="po-wafer-leader" d="" />
-                    </g>
-                `).join('')}
-            </svg>
+                    ${isCompact ? '' : labelsHTML()}
+                </svg>
+                ${isCompact ? `<p class="po-wafer-caption g-caption">${WAFER_CAPTION}</p>` : ''}
+            </div>
         `;
     };
 
@@ -369,12 +459,12 @@ export default defineBlock('section.proof-outcomes', (els) => {
 
     const setWaferHidden = (mount) => {
         gsap.set(mount.querySelector('.po-wafer-layer'), { y: -WAFER.drop, opacity: 0 });
-        gsap.set(mount.querySelector('.po-wafer-label.is-layer'), { opacity: 0 });
+        gsap.set(mount.querySelectorAll('.po-wafer-label.is-layer'), { opacity: 0 });
     };
 
     const buildWaferTimeline = (mount) => gsap.timeline()
         .to(mount.querySelector('.po-wafer-layer'), { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' })
-        .to(mount.querySelector('.po-wafer-label.is-layer'), { opacity: 1, duration: 0.4, ease: 'power1.out' }, '-=0.2');
+        .to(mount.querySelectorAll('.po-wafer-label.is-layer'), { opacity: 1, duration: 0.4, ease: 'power1.out' }, '-=0.2');
 
     const createScale = (width, layout) => {
         const plotRight = width - layout.right;

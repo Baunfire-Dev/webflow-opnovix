@@ -10,10 +10,36 @@
             }
         }
 
-        &-chart.is-compact .po-legend {
-            @apply static w-auto flex-row flex-wrap;
-            gap: var(--_spacing---space--2xs) var(--_spacing---space--xs);
-            margin-top: var(--_spacing---space--xs);
+        &-wafer {
+            @apply flex flex-col flex-auto justify-between;
+            gap: var(--_spacing---space--md);
+        }
+
+        &-chart.is-compact {
+            .po-legend {
+                @apply static w-auto flex-row flex-wrap;
+                gap: 0.5rem 0.875rem;
+                margin-bottom: 1.25rem;
+            }
+
+            .po-legend-item {
+                gap: 0.375rem;
+            }
+
+            .po-tick,
+            .po-pill text {
+                @apply normal-case;
+                font-family: var(--_typography---font--body);
+                letter-spacing: normal;
+            }
+
+            .po-pill text {
+                @apply font-medium;
+            }
+        }
+
+        &-wafer.is-compact .po-attributes {
+            @apply grid-cols-1;
         }
 
         &-svg,
@@ -29,7 +55,6 @@
         &-bracket-line {
             fill: none;
             stroke: var(--_palette---brand--plum);
-            stroke-width: 1;
         }
 
         &-pill {
@@ -57,6 +82,52 @@
 
         &-legend-marker {
             @apply flex-none;
+        }
+
+        &-legend-line {
+            @apply flex-none;
+            width: 0.875rem;
+            height: 0.1875rem;
+            border-radius: 0.125rem;
+        }
+
+        &-wafer-figure {
+            @apply flex flex-col;
+            gap: 1.25rem;
+        }
+
+        &-wafer-caption {
+            @apply text-center;
+        }
+
+        &-footnote {
+            @apply normal-case;
+            letter-spacing: normal;
+            margin-top: 1.25rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--_palette---neutral--stone);
+        }
+
+        &-attributes {
+            @apply grid grid-cols-2 m-0 p-0 list-none;
+            gap: 0.625rem var(--_spacing---space--xs);
+        }
+
+        &-attribute {
+            @apply flex items-center;
+            gap: 0.625rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--_palette---neutral--stone);
+            color: var(--_palette---neutral--charcoal);
+        }
+
+        &-attribute-icon {
+            @apply flex-none;
+        }
+
+        &-wafer-label text {
+            font-size: 0.6875rem;
+            letter-spacing: 0.0275rem;
         }
 
         &-wafer-dot {
