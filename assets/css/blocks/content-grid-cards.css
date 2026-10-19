@@ -1,0 +1,19 @@
+.content-grid-cards {
+    .cgc {
+        &-svg {
+            @apply block h-auto max-w-full overflow-visible;
+
+            &.is-gan {
+                width: 11.25rem;
+            }
+
+            &.is-ingan {
+                width: 14.1875rem;
+            }
+
+            &.is-native {
+                width: 14.0625rem;
+            }
+        }
+    }
+}
