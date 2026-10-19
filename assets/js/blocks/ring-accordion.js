@@ -5,8 +5,8 @@ export default defineBlock('section.ring-accordion', (els) => {
     const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
     const RING_DURATION = 800;
     const LABEL_FADE = 200;
-
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const STOP_DELAY = RING_DURATION * 0.6;
+    const GLOW_DELAY = RING_DURATION * 0.35;
 
     const script = () => {
         els.forEach(self => handleAccordion(self));
@@ -84,6 +84,7 @@ export default defineBlock('section.ring-accordion', (els) => {
         let current = -1;
         let glowTimer;
         let labelTimer;
+        let stopTimer;
 
         const resetRing = () => {
             const animated = [...progress, ...stops, glow].filter(Boolean);
@@ -111,13 +112,19 @@ export default defineBlock('section.ring-accordion', (els) => {
         };
 
         const updateStops = (index) => {
+            clearTimeout(stopTimer);
+
             stops.forEach((stop, i) => {
-                stop.classList.toggle('is-active', i === index);
+                stop.classList.remove('is-active');
                 stop.classList.toggle('is-passed', i < index);
             });
+
+            stopTimer = setTimeout(() => {
+                stops[index]?.classList.add('is-active');
+            }, STOP_DELAY);
         };
 
-        const moveGlow = (step, reduce) => {
+        const moveGlow = (step) => {
             if (!glow) return;
 
             clearTimeout(glowTimer);
@@ -128,30 +135,29 @@ export default defineBlock('section.ring-accordion', (els) => {
                 glow.setAttribute('cx', (RADIUS * Math.cos(angle)).toFixed(2));
                 glow.setAttribute('cy', (RADIUS * Math.sin(angle)).toFixed(2));
                 glow.classList.add('is-visible');
-            }, reduce ? 0 : RING_DURATION - 100);
+            }, GLOW_DELAY);
         };
 
-        const swapLabels = (index, reduce) => {
+        const swapLabels = (index) => {
             clearTimeout(labelTimer);
             labels.forEach(label => label.classList.add('is-hidden'));
 
             labelTimer = setTimeout(() => {
                 setLabels(index);
                 labels.forEach(label => label.classList.remove('is-hidden'));
-            }, reduce ? 0 : LABEL_FADE);
+            }, LABEL_FADE);
         };
 
         const update = (index) => {
             if (index === current) return;
             current = index;
 
-            const reduce = reducedMotion.matches;
             const step = index + 1;
 
             drawProgress(step);
             updateStops(index);
-            moveGlow(step, reduce);
-            swapLabels(index, reduce);
+            moveGlow(step);
+            swapLabels(index);
         };
 
         resetRing();

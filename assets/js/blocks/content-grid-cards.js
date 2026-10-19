@@ -6,60 +6,63 @@ export default defineBlock('section.content-grid-cards', (els, baunfire) => {
     const PULSE = 0.25;
 
     const script = () => {
-        els.forEach(self => handleReveal(self));
+        els.forEach(self => handleCards(self));
     };
 
-    const handleReveal = (self) => {
-        const svgs = [...self.querySelectorAll('.cgc-svg')];
-        if (!svgs.length) return;
+    const handleCards = (self) => {
+        const cards = [...self.querySelectorAll('.cgc-card')].filter(card => card.querySelector('.cgc-svg'));
+        if (!cards.length) return;
 
-        const tl = gsap.timeline({
-            scrollTrigger: {
-                trigger: self.querySelector('.cgc-grid') || self,
-                start: baunfire.anim.start,
-                once: true
-            }
+        const reveals = new Map(cards.map(card => [card, cardTimeline(card)]));
+
+        ScrollTrigger.batch(cards, {
+            start: baunfire.anim.start,
+            once: true,
+            onEnter: batch => batch.forEach((card, i) => reveals.get(card).delay(i * STAGGER).play())
+        });
+    };
+
+    const cardTimeline = (card) => {
+        const svg = card.querySelector('.cgc-svg');
+        const lines = [...svg.querySelectorAll('.cgc-line')];
+        const nodes = svg.querySelectorAll('.cgc-node');
+        const extras = svg.querySelectorAll('.cgc-relaxed, .cgc-arrow');
+        const lattice = svg.querySelector('.cgc-lattice');
+
+        lines.forEach(line => {
+            const length = line.getTotalLength();
+            gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
         });
 
-        svgs.forEach((svg, i) => {
-            const lines = [...svg.querySelectorAll('.cgc-line')];
-            const nodes = svg.querySelectorAll('.cgc-node');
-            const extras = svg.querySelectorAll('.cgc-relaxed, .cgc-arrow');
-            const lattice = svg.querySelector('.cgc-lattice');
-            const at = i * STAGGER;
+        gsap.set(nodes, { autoAlpha: 0 });
+        gsap.set(extras, { autoAlpha: 0 });
 
-            lines.forEach(line => {
-                const length = line.getTotalLength();
-                gsap.set(line, { strokeDasharray: length, strokeDashoffset: length });
-            });
-
-            gsap.set(nodes, { autoAlpha: 0 });
-            gsap.set(extras, { autoAlpha: 0 });
-
-            tl.to(lines, {
+        const tl = gsap.timeline({ paused: true })
+            .to(lines, {
                 strokeDashoffset: 0,
                 duration: DRAW,
                 ease: 'neutral',
                 clearProps: 'strokeDasharray,strokeDashoffset'
-            }, at)
-                .to(nodes, {
-                    autoAlpha: 1,
-                    duration: 0.3,
-                    ease: 'power2-in-out',
-                    stagger: { each: 0.015, from: 'center' }
-                }, at + DRAW * 0.5)
-                .to(extras, { autoAlpha: 1, duration: 0.4, ease: 'power2-in-out' }, at + DRAW * 0.5);
+            }, 0)
+            .to(nodes, {
+                autoAlpha: 1,
+                duration: 0.3,
+                ease: 'power2-in-out',
+                stagger: { each: 0.015, from: 'center' }
+            }, DRAW * 0.5)
+            .to(extras, { autoAlpha: 1, duration: 0.4, ease: 'power2-in-out' }, DRAW * 0.5);
 
-            if (svg.classList.contains('is-native') && lattice) {
-                tl.fromTo(lattice,
-                    { scale: 0.8, transformOrigin: '50% 50%' },
-                    { scale: 1, duration: 0.8, ease: 'power3-in-out' },
-                    at
-                );
-            }
+        if (svg.classList.contains('is-native') && lattice) {
+            tl.fromTo(lattice,
+                { scale: 0.8, transformOrigin: '50% 50%' },
+                { scale: 1, duration: 0.8, ease: 'power3-in-out' },
+                0
+            );
+        }
 
-            if (svg.classList.contains('is-ingan')) handlePulse(svg);
-        });
+        if (svg.classList.contains('is-ingan')) handlePulse(svg);
+
+        return tl;
     };
 
     const handlePulse = (svg) => {

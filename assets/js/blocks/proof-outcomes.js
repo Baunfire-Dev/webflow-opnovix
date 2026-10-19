@@ -171,9 +171,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
     };
 
     const createGraphic = (mount, { render, hide, animate }) => {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-        let played = !gsap || !ScrollTrigger || reduce;
+        let played = !gsap || !ScrollTrigger;
         let timeline = null;
         let width = 0;
 

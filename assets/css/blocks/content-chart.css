@@ -1,0 +1,59 @@
+.content-chart {
+    .cc {
+        &-chart {
+            @apply relative w-full;
+            color: var(--_palette---neutral--graphite);
+
+            :where(svg text) {
+                fill: currentColor;
+            }
+
+            &.is-compact {
+                .cc-tick,
+                .cc-pill text {
+                    font-size: 0.75rem;
+                }
+            }
+        }
+
+        &-svg {
+            @apply block overflow-visible;
+        }
+
+        &-grid line {
+            stroke: var(--_palette---neutral--stone);
+            stroke-width: 1;
+        }
+
+        &-tick,
+        &-pill text {
+            font-family: var(--_typography---font--body);
+            font-size: 0.8125rem;
+            letter-spacing: normal;
+        }
+
+        &-line line {
+            stroke-linecap: round;
+        }
+
+        &-bracket-line {
+            fill: none;
+            stroke: var(--_palette---brand--plum);
+        }
+
+        &-pill {
+            rect {
+                fill: var(--_palette---brand--plum);
+            }
+
+            text {
+                @apply font-medium;
+                fill: var(--_palette---neutral--white);
+            }
+        }
+
+        &-legend-icon svg {
+            @apply block;
+        }
+    }
+}
