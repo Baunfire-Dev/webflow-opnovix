@@ -18,7 +18,7 @@ export default defineBlock('section.logo-cards', (els, baunfire) => {
         gsap.set(cards, { autoAlpha: 0, y: RISE * rem });
 
         ScrollTrigger.batch(cards, {
-            start: baunfire.anim.start,
+            start: "top 80%",
             once: true,
             onEnter: batch => gsap.to(batch, {
                 autoAlpha: 1,

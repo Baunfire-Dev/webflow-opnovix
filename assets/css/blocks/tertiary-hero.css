@@ -1,0 +1,15 @@
+.tertiary-hero {
+    .w-mod-js & {
+        .th-head > * {
+            @apply invisible opacity-0;
+        }
+    }
+
+    .th {
+        &-pattern {
+            svg {
+                @apply block;
+            }
+        }
+    }
+}
