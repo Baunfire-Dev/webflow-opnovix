@@ -1,0 +1,11 @@
+.content-stats-text {
+    .cst {
+        &-value {
+            font-variant-numeric: tabular-nums;
+        }
+
+        &-hex svg {
+            @apply block w-full h-auto;
+        }
+    }
+}

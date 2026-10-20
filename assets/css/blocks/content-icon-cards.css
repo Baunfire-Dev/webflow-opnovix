@@ -1,0 +1,13 @@
+.content-icon-cards {
+    .w-mod-js & {
+        .cic-card {
+            @apply invisible opacity-0;
+        }
+    }
+
+    .cic {
+        &-svg {
+            @apply block h-auto w-full overflow-visible;
+        }
+    }
+}

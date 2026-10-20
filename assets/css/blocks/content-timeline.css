@@ -1,0 +1,11 @@
+.content-timeline {
+    .ctl {
+        &-hex {
+            @apply block shrink-0 overflow-visible;
+        }
+
+        &-rail {
+            background-image: linear-gradient(90deg, var(--_palette---neutral--stone) 0%, var(--_palette---brand--amber) 25%, var(--_palette---brand--peach) 50%, var(--_palette---brand--coral) 75%);
+        }
+    }
+}

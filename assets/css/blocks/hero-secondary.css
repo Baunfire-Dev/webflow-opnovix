@@ -1,0 +1,28 @@
+.hero-secondary {
+    @apply overflow-y-visible z-[2] contain-none;
+
+    .w-mod-js & {
+        .hs-head > *,
+        .hs-para-wrap {
+            @apply invisible opacity-0;
+        }
+    }
+
+    .hs {
+        &-glow-light,
+        &-glow-flare {
+            @apply pointer-events-none;
+            will-change: transform;
+        }
+
+        &-head {
+            .g-heading {
+                @media (max-width: 47.9375rem) {
+                    font-size: var(--_typography---size--h4);
+                    line-height: var(--_typography---line-height--h4);
+                    letter-spacing: var(--_typography---tracking--h4);
+                }
+            }
+        }
+    }
+}
