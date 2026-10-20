@@ -1,0 +1,23 @@
+.logo-cards {
+    .w-mod-js & {
+        .lc-card {
+            @apply invisible opacity-0;
+        }
+    }
+
+    .lc {
+        &-card {
+            transition: border-color 0.2s cubic-bezier(0.45, 0.05, 0.55, 1);
+
+            &:hover {
+                border-color: var(--_palette---neutral--graphite);
+            }
+        }
+
+        &-grid:has(> .lc-card:nth-child(4)) > .lc-card {
+            @media (min-width: 62rem) {
+                max-width: calc((100% - 2 * var(--_spacing---space--xs)) / 3);
+            }
+        }
+    }
+}
