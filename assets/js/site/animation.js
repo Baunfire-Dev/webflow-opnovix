@@ -95,7 +95,7 @@ export const Animation = {
                 gsap.to(panelInner, {
                     duration: 0.6,
                     scrollTo: { y: elTop, autoKill: true },
-                    ease: "neutral",
+                    ease: "power2-out",
                     overwrite: true
                 });
             };
@@ -252,12 +252,11 @@ export const Animation = {
             spread: 0.45,
             hexScale: [0.25, 0.45],
             fragmentScale: [0.12, 0.3],
-            rotation: 120,
-            opacity: [0.35, 1],
-            duration: 1.6,
-            stagger: 0,
-            ease: "expo-out",
-            reformSpeed: 1.6,
+            rotation: 90,
+            duration: 2.6,
+            stagger: 0.2,
+            ease: "power2-out",
+            reformSpeed: 1.4,
             bottomOffset: 4,
             seed: 2026
         };
@@ -313,7 +312,7 @@ export const Animation = {
                 y: Math.sin(angle) * distance,
                 rotation: (random() * 2 - 1) * EXPLODE.rotation,
                 scale: between(random, piece.isFragment ? EXPLODE.fragmentScale : EXPLODE.hexScale),
-                opacity: between(random, EXPLODE.opacity),
+                opacity: 1,
                 duration: EXPLODE.duration,
                 ease: EXPLODE.ease
             };
