@@ -353,11 +353,11 @@ export default defineBlock('section.proof-outcomes', (els) => {
         const fullWidth = Number(mount.querySelector('.po-svg').getAttribute('width')) + 20;
 
         return gsap.timeline()
-            .to(mount.querySelector('.po-grid'), { opacity: 1, duration: 0.2, ease: 'none' })
-            .to(clips, { attr: { width: fullWidth }, duration: 0.9, ease: 'power2.inOut', stagger: 0.15 })
-            .to(mount.querySelectorAll('.po-area'), { opacity: 1, duration: 0.4, ease: 'power1.out' }, '-=0.2')
-            .to(mount.querySelectorAll('.po-marker'), { scale: 1, duration: 0.4, ease: 'back.out(2)', stagger: 0.05 }, '-=0.2')
-            .to(mount.querySelector('.po-bracket'), { opacity: 1, duration: 0.4, ease: 'power1.out' });
+            .to(mount.querySelector('.po-grid'), { opacity: 1, duration: 0.15, ease: 'none' }, 0)
+            .to(clips, { attr: { width: fullWidth }, duration: 0.675, ease: 'power2.inOut', stagger: 0.1125 }, 0)
+            .to(mount.querySelectorAll('.po-area'), { opacity: 1, duration: 0.3, ease: 'power1.out' }, '-=0.15')
+            .to(mount.querySelectorAll('.po-marker'), { scale: 1, duration: 0.3, ease: 'back.out(2)', stagger: 0.0375 }, '-=0.15')
+            .to(mount.querySelector('.po-bracket'), { opacity: 1, duration: 0.3, ease: 'power1.out' }, '<');
     };
 
     const waferFrame = (width, isCompact) => {

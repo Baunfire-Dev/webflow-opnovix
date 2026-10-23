@@ -1,0 +1,7 @@
+.contact-form {
+    .w-mod-js & .cf {
+        &-form {
+            @apply invisible opacity-0;
+        }
+    }
+}
