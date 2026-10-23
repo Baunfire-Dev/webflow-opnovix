@@ -103,12 +103,20 @@ export default defineBlock('section.hero-homepage', (els) => {
     const createSuperbloom = (wrapper, canvas, settings) => {
         const context = canvas.getContext('2d');
         const hexes = getHexes();
+        const growEase = gsap.parseEase(settings.ease);
+        const fadeEase = gsap.parseEase('power1.out');
+        const idleEase = gsap.parseEase('sine.inOut');
+        const fadeDuration = Math.max(0.1, settings.duration * 0.5);
+        const speed = window.matchMedia(MOBILE_QUERY).matches ? MOBILE_SPEED : 1;
 
         let pixelRatio = 1;
         let graphic = { x: 0, y: 0, scale: 1 };
-        let timeline = null;
-        let idleTimeline = null;
+        let loadTime = 0;
+        let loadEnd = 0;
+        let idleTime = 0;
+        let isIdle = false;
         let isRunning = false;
+        let skipFrame = false;
 
         const resize = () => {
             const box = canvas.getBoundingClientRect();
@@ -125,72 +133,84 @@ export default defineBlock('section.hero-homepage', (els) => {
                 x: BLEED + (availableWidth - VIEWBOX.width * scale) / 2,
                 y: BLEED + (availableHeight - VIEWBOX.height * scale) / 2
             };
+
+            if (isIdle) render();
         };
 
-        const playLoadIn = () => {
+        const prepare = () => {
             setDelays(hexes, settings);
-            timeline = gsap.timeline();
-            if (window.matchMedia(MOBILE_QUERY).matches) timeline.timeScale(MOBILE_SPEED);
+            loadEnd = Math.max(...hexes.map(hex => hex.delay + Math.max(settings.duration, fadeDuration)));
+
+            const random = createRandom(settings.seed + 1);
 
             hexes.forEach(hex => {
-                timeline.fromTo(hex,
-                    { scale: settings.fromScale, rotation: settings.fromRotate },
-                    { scale: 1, rotation: 0, duration: settings.duration, ease: settings.ease },
-                    hex.delay
-                );
+                hex.idle = random() <= IDLE.share;
+                if (!hex.idle) return;
 
-                if (settings.fromOpacity < 1) {
-                    timeline.fromTo(hex,
-                        { opacity: settings.fromOpacity },
-                        { opacity: 1, duration: Math.max(0.1, settings.duration * 0.5), ease: 'power1.out' },
-                        hex.delay
-                    );
-                } else {
-                    hex.opacity = 1;
-                }
+                hex.cycle = IDLE.minCycle + random() * (IDLE.maxCycle - IDLE.minCycle);
+                hex.offset = random() * IDLE.maxCycle;
             });
-
-            timeline.call(playIdle, null, timeline.duration());
         };
 
-        const playIdle = () => {
-            const random = createRandom(settings.seed + 1);
-            idleTimeline = gsap.timeline({ paused: !isRunning });
-
+        const updateLoad = () => {
             hexes.forEach(hex => {
-                if (random() > IDLE.share) return;
+                const grow = clamp((loadTime - hex.delay) / settings.duration, 0, 1);
+                const eased = growEase(grow);
 
-                const cycle = IDLE.minCycle + random() * (IDLE.maxCycle - IDLE.minCycle);
-
-                idleTimeline.to(hex, {
-                    opacity: IDLE.minOpacity,
-                    duration: cycle / 2,
-                    ease: 'sine.inOut',
-                    repeat: -1,
-                    yoyo: true
-                }, random() * IDLE.maxCycle);
+                hex.scale = settings.fromScale + (1 - settings.fromScale) * eased;
+                hex.rotation = settings.fromRotate * (1 - eased);
+                hex.opacity = settings.fromOpacity < 1
+                    ? settings.fromOpacity + (1 - settings.fromOpacity) * fadeEase(clamp((loadTime - hex.delay) / fadeDuration, 0, 1))
+                    : 1;
             });
+        };
+
+        const updateIdle = () => {
+            hexes.forEach(hex => {
+                if (!hex.idle) return;
+
+                const local = idleTime - hex.offset;
+                if (local < 0) return;
+
+                const half = hex.cycle / 2;
+                const phase = (local % hex.cycle) / half;
+                const eased = idleEase(phase <= 1 ? phase : 2 - phase);
+                hex.opacity = 1 + (IDLE.minOpacity - 1) * eased;
+            });
+        };
+
+        const tick = (time, deltaTime) => {
+            const delta = Math.min(deltaTime, 100) / 1000;
+
+            if (!isIdle) {
+                loadTime += delta * speed;
+                updateLoad();
+                if (loadTime >= loadEnd) isIdle = true;
+                render();
+                return;
+            }
+
+            idleTime += delta;
+            skipFrame = !skipFrame;
+            if (skipFrame) return;
+
+            updateIdle();
+            render();
         };
 
         const start = () => {
             if (isRunning) return;
             isRunning = true;
-
-            if (!timeline) playLoadIn();
-            else if (timeline.progress() < 1) timeline.resume();
-            idleTimeline?.resume();
-
-            gsap.ticker.add(render);
+            gsap.ticker.add(tick);
         };
 
         const stop = () => {
             if (!isRunning) return;
             isRunning = false;
-
-            gsap.ticker.remove(render);
-            if (timeline && timeline.progress() < 1) timeline.pause();
-            idleTimeline?.pause();
+            gsap.ticker.remove(tick);
         };
+
+        prepare();
 
         const drawHex = (x, y, radius, rotation, color, opacity) => {
             const startAngle = rotation * Math.PI / 180;

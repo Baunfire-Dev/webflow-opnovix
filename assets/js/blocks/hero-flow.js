@@ -80,9 +80,15 @@ export default defineBlock('section.hero-flow', (els) => {
         let pixelRatio = 1;
         let size = { width: 0, height: 0 };
         let graphic = { x: 0, y: 0, scale: 1 };
-        let timeline = null;
-        let rampTween = null;
-        let pulseTimeline = null;
+        const growEase = gsap.parseEase(REVEAL.ease);
+        const fadeEase = gsap.parseEase('power1.out');
+        const waveEase = gsap.parseEase('sine.inOut');
+        const fadeDuration = Math.max(0.1, REVEAL.duration * 0.5);
+
+        let loadTime = 0;
+        let loadEnd = 0;
+        let pulseTime = 0;
+        let isIdle = false;
         let isRunning = false;
 
         const resize = () => {
@@ -103,82 +109,71 @@ export default defineBlock('section.hero-flow', (els) => {
             render();
         };
 
-        const playLoadIn = () => {
+        const prepare = () => {
             setDelays(hexes);
-            timeline = gsap.timeline();
+            loadEnd = Math.max(...hexes.map(hex => hex.delay + Math.max(REVEAL.duration, fadeDuration)));
 
-            hexes.forEach(hex => {
-                timeline.fromTo(hex,
-                    { scale: REVEAL.fromScale },
-                    { scale: 1, duration: REVEAL.duration, ease: REVEAL.ease },
-                    hex.delay
-                );
-
-                timeline.fromTo(hex,
-                    { opacity: REVEAL.fromOpacity },
-                    { opacity: 1, duration: Math.max(0.1, REVEAL.duration * 0.5), ease: 'power1.out' },
-                    hex.delay
-                );
-            });
-
-            playMarquee();
-            timeline.call(playPulse, null, timeline.duration());
-        };
-
-        const playMarquee = () => {
-            rampTween = gsap.to(marquee, {
-                strength: 1,
-                duration: MARQUEE.rampIn,
-                ease: 'sine.inOut',
-                paused: !isRunning
-            });
-        };
-
-        const playPulse = () => {
             const random = createRandom(REVEAL.seed + 1);
-            pulseTimeline = gsap.timeline({ paused: !isRunning });
 
             hexes.forEach(hex => {
-                if (random() > PULSE.share) return;
+                hex.pulses = random() <= PULSE.share;
+                if (!hex.pulses) return;
 
-                const cycle = PULSE.minCycle + random() * (PULSE.maxCycle - PULSE.minCycle);
+                hex.cycle = PULSE.minCycle + random() * (PULSE.maxCycle - PULSE.minCycle);
+                hex.offset = random() * PULSE.maxCycle;
+            });
+        };
 
-                pulseTimeline.to(hex, {
-                    pulse: 1,
-                    duration: cycle / 2,
-                    ease: 'sine.inOut',
-                    repeat: -1,
-                    yoyo: true
-                }, random() * PULSE.maxCycle);
+        const updateLoad = () => {
+            hexes.forEach(hex => {
+                hex.scale = REVEAL.fromScale + (1 - REVEAL.fromScale) * growEase(clamp((loadTime - hex.delay) / REVEAL.duration, 0, 1));
+                hex.opacity = REVEAL.fromOpacity + (1 - REVEAL.fromOpacity) * fadeEase(clamp((loadTime - hex.delay) / fadeDuration, 0, 1));
+            });
+        };
+
+        const updatePulse = () => {
+            hexes.forEach(hex => {
+                if (!hex.pulses) return;
+
+                const local = pulseTime - hex.offset;
+                if (local < 0) return;
+
+                const phase = (local % hex.cycle) / (hex.cycle / 2);
+                hex.pulse = waveEase(phase <= 1 ? phase : 2 - phase);
             });
         };
 
         const tick = (time, deltaTime) => {
-            marquee.offset = (marquee.offset + MARQUEE.direction * MARQUEE.speed * marquee.strength * deltaTime / 1000) % PERIOD;
+            const delta = Math.min(deltaTime, 100) / 1000;
+            loadTime += delta;
+
+            marquee.strength = waveEase(clamp(loadTime / MARQUEE.rampIn, 0, 1));
+            marquee.offset = (marquee.offset + MARQUEE.direction * MARQUEE.speed * marquee.strength * delta) % PERIOD;
+
+            if (isIdle) {
+                pulseTime += delta;
+                updatePulse();
+            } else {
+                updateLoad();
+                if (loadTime >= loadEnd) isIdle = true;
+            }
+
             render();
         };
 
         const start = () => {
             if (isRunning) return;
             isRunning = true;
-
-            if (!timeline) playLoadIn();
-            else if (timeline.progress() < 1) timeline.resume();
-            rampTween?.resume();
-            pulseTimeline?.resume();
-
             gsap.ticker.add(tick);
         };
 
         const stop = () => {
             if (!isRunning) return;
             isRunning = false;
-
             gsap.ticker.remove(tick);
-            if (timeline && timeline.progress() < 1) timeline.pause();
-            rampTween?.pause();
-            pulseTimeline?.pause();
         };
+
+        prepare();
 
         const drawHex = (x, y, radius, color, opacity) => {
             context.globalAlpha = clamp(opacity, 0, 1);
