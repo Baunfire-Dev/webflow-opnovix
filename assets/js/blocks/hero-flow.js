@@ -30,12 +30,14 @@ export default defineBlock('section.hero-flow', (els) => {
 
     const TEXT = {
         delay: 0.2,
+        mobileDelay: 0,
         duration: 1.2,
         distance: 32,
         stagger: 0.12,
         ease: 'power2-out'
     };
 
+    const MOBILE_QUERY = '(max-width: 767px)';
     const VIEWBOX = { width: 1376, height: 532 };
     const PERIOD = VIEWBOX.width * 2;
     const EDGE = 30;
@@ -60,7 +62,7 @@ export default defineBlock('section.hero-flow', (els) => {
 
         gsap.fromTo(items,
             { autoAlpha: 0, y: TEXT.distance },
-            { autoAlpha: 1, y: 0, duration: TEXT.duration, delay: TEXT.delay, stagger: TEXT.stagger, ease: TEXT.ease }
+            { autoAlpha: 1, y: 0, duration: TEXT.duration, delay: window.matchMedia(MOBILE_QUERY).matches ? TEXT.mobileDelay : TEXT.delay, stagger: TEXT.stagger, ease: TEXT.ease }
         );
     };
 
