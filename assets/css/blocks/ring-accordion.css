@@ -1,44 +1,30 @@
 .ring-accordion {
-    --ra-ring-ease: cubic-bezier(0.65, 0, 0.35, 1); /* ease in-out for the ring draw */
-    --ra-ring-bg: #5b183f;                          /* match the section background */
-    --cubic-ease: cubic-bezier(0.65, 0, 0.35, 1);
+    --ra-ease: cubic-bezier(0.65, 0, 0.35, 1);
+    --ra-ring-bg: #5b183f;
 
-    /* ---------- Light ring ---------- */
-    .ra-ring-container {
-        .ra-ring-labels {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 0 18%; /* keep long titles inside the ring */
-            text-align: center;
-            pointer-events: none;
+    .ra {
+        &-ring-labels {
+            @apply absolute inset-0 flex flex-col items-center justify-center gap-1 text-center pointer-events-none;
+            padding: 0 18%;
         }
 
-        .ra-ring {
-            display: block;
-            width: 100%;
-            height: auto;
-            overflow: visible; /* let the glow bleed past the viewBox */
+        &-ring {
+            @apply block w-full h-auto overflow-visible;
         }
 
-        /* Draw from previous stop to new stop — same 0.8s as the content open */
-        .ra-ring-progress {
-            transition: stroke-dashoffset 0.8s var(--ra-ring-ease);
+        &-ring-progress {
+            transition: stroke-dashoffset 0.8s var(--ra-ease);
         }
 
-        .ra-ring-stop {
+        &-ring-stop {
             fill: var(--ra-ring-bg);
             stroke: rgba(255, 255, 255, 0.4);
             transform-box: fill-box;
             transform-origin: center;
             transition:
-                fill 0.4s var(--cubic-ease),
-                stroke 0.4s var(--cubic-ease),
-                transform 0.4s var(--cubic-ease);
+                fill 0.4s var(--ra-ease),
+                stroke 0.4s var(--ra-ease),
+                transform 0.4s var(--ra-ease);
 
             &.is-passed {
                 fill: #f9a98a;
@@ -52,108 +38,101 @@
             }
         }
 
-        .ra-ring-glow {
-            opacity: 0;
+        &-ring-glow {
+            @apply opacity-0;
             transform: scale(0.4);
             transform-box: fill-box;
             transform-origin: center;
             transition:
-                opacity 0.3s var(--cubic-ease),
-                transform 0.3s var(--cubic-ease);
+                opacity 0.3s var(--ra-ease),
+                transform 0.3s var(--ra-ease);
 
             &.is-visible {
-                opacity: 1;
+                @apply opacity-100;
                 transform: scale(1);
                 transition:
-                    opacity 0.6s var(--cubic-ease),
-                    transform 0.6s var(--cubic-ease);
+                    opacity 0.6s var(--ra-ease),
+                    transform 0.6s var(--ra-ease);
             }
         }
 
-        .ra-ring-label {
-            transition: opacity 0.2s var(--cubic-ease);
+        &-ring-label {
+            transition: opacity 0.2s var(--ra-ease);
 
             &.is-hidden {
-                opacity: 0;
+                @apply opacity-0;
             }
         }
 
-        .ra-ring-title {
-            color: #fff;
+        &-ring-title {
+            @apply text-white;
         }
 
-        .ra-ring-count {
+        &-ring-count {
             color: rgba(255, 255, 255, 0.52);
         }
-    }
 
-    /* ---------- Accordion ---------- */
-    .ra-acc-items {
-        .ra-item {
+        &-item {
             #ra-item-number {
                 opacity: 0.52;
-                transition: opacity 0.4s var(--cubic-ease);
+                transition: opacity 0.4s var(--ra-ease);
             }
 
-            .ra-item-title {
-                span {
-                    opacity: 0.84;
-                    transition: font-size 0.4s var(--cubic-ease), opacity 0.4s var(--cubic-ease);
-                }
+            &-title span {
+                opacity: 0.84;
+                transition:
+                    font-size 0.4s var(--ra-ease),
+                    opacity 0.4s var(--ra-ease);
             }
 
-            .ra-item-inner {
-                .ra-item-content {
-                    grid-template-rows: 0fr;
-                    transition: grid-template-rows 0.8s var(--cubic-ease);
-
-                    .ra-item-content-outer {
-                        min-height: 0;
-                        overflow: hidden;
-                        opacity: 0;
-                        transition: opacity 0.3s var(--cubic-ease);
-                    }
-                }
+            &-content {
+                grid-template-rows: 0fr;
+                transition: grid-template-rows 0.8s var(--ra-ease);
             }
 
-            .ra-item-icon {
+            &-content-outer {
+                @apply min-h-0 overflow-hidden opacity-0;
+                transition: opacity 0.3s var(--ra-ease);
+            }
+
+            &-icon {
                 opacity: 0.52;
-                transition: opacity 0.8s var(--cubic-ease), transform 0.8s var(--cubic-ease);
+                transition:
+                    opacity 0.8s var(--ra-ease),
+                    transform 0.8s var(--ra-ease);
+            }
 
-                .ra-item-icon-vertical {
-                    scale: 1;
-                    transition: scale 0.8s var(--cubic-ease);
-                }
+            &-icon-vertical {
+                scale: 1;
+                transition: scale 0.8s var(--ra-ease);
             }
 
             &.active {
                 #ra-item-number {
-                    opacity: 1;
+                    @apply opacity-100;
                 }
 
-                .ra-item-title {
-                    span {
-                        opacity: 1;
+                .ra-item {
+                    &-title span {
+                        @apply opacity-100;
                         font-size: var(--_typography---size--h4);
                     }
-                }
 
-                .ra-item-inner {
-                    .ra-item-content {
+                    &-content {
                         grid-template-rows: 1fr;
-
-                        .ra-item-content-outer {
-                            opacity: 1;
-                            transition: opacity 0.6s var(--cubic-ease) 0.2s;
-                        }
                     }
-                }
 
-                .ra-item-icon {
-                    opacity: 1;
-                    transform: rotate(360deg);
+                    &-content-outer {
+                        @apply opacity-100;
+                        transition: opacity 0.6s var(--ra-ease) 0.2s;
+                    }
 
-                    .ra-item-icon-vertical {
+                    &-icon {
+                        @apply opacity-100;
+                        transform: rotate(360deg);
+                    }
+
+                    &-icon-vertical {
                         scale: 0;
                     }
                 }
