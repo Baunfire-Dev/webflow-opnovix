@@ -118,6 +118,14 @@ header {
 
 			&-link-inner {
 				@apply cursor-pointer;
+
+				&:hover,
+				&:active,
+				&:focus-visible {
+					.g-nav-link-text {
+						color: var(--_palette---brand--coral);
+					}
+				}
 			}
 
 			&-actions,
