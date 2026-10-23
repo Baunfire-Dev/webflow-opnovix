@@ -35,9 +35,6 @@
             width: calc(100% * 355 / 310);
         }
 
-        &-graphic-stop {
-            stop-color: var(--fs-color);
-        }
 
         &-graphic-node {
             fill: var(--fs-color);

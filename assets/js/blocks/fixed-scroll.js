@@ -101,19 +101,11 @@ export default defineBlock('section.fixed-scroll', (els) => {
         </svg>
     `;
 
-    const gradientHTML = (uid, accent, i) => `
-        <linearGradient id="${uid}-g${i}" x1="${accent.g[0]}" y1="${accent.g[1]}" x2="${accent.g[2]}" y2="${accent.g[3]}" gradientUnits="userSpaceOnUse">
-            <stop class="fs-graphic-stop"/>
-            <stop offset="1" stop-color="${GRAY}"/>
-        </linearGradient>
-    `;
-
-    const topHTML = (uid) => `
+    const topHTML = () => `
         <div class="fs-graphic-top">
             <svg viewBox="0 0 355 340" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>${TOP_ACCENTS.map((accent, i) => gradientHTML(uid, accent, i)).join('')}</defs>
                 ${TOP_LINES.map(d => `<path d="${d}" stroke="${GRAY}" vector-effect="non-scaling-stroke"/>`).join('')}
-                ${TOP_ACCENTS.map((accent, i) => `<path d="${accent.d}" stroke="url(#${uid}-g${i})" vector-effect="non-scaling-stroke"/>`).join('')}
+                ${TOP_ACCENTS.map(accent => `<path d="${accent.d}" stroke="${GRAY}" vector-effect="non-scaling-stroke"/>`).join('')}
                 <g class="fs-graphic-solid">${TOP_LINES.map(d => `<path d="${d}"/>`).join('')}</g>
                 <g class="fs-graphic-flow"></g>
                 ${TOP_NODES.map(d => `<path class="fs-graphic-node" d="${d}"/>`).join('')}
@@ -121,33 +113,33 @@ export default defineBlock('section.fixed-scroll', (els) => {
         </div>
     `;
 
-    const graphicHTML = (uid) => `
+    const graphicHTML = () => `
         <div class="fs-graphic" aria-hidden="true">
             <div class="fs-graphic-sticky">
                 <div class="fs-graphic-box">
                     ${backHTML()}
-                    ${topHTML(uid)}
+                    ${topHTML()}
                 </div>
             </div>
         </div>
     `;
 
     const script = () => {
-        els.forEach((self, index) => handleGraphic(self, index));
+        els.forEach(self => handleGraphic(self));
     };
 
-    const handleGraphic = (self, index) => {
+    const handleGraphic = (self) => {
         const body = self.querySelector('.fs-body');
         const items = [...self.querySelectorAll('.fs-item')];
         if (!body || items.length < 2) return;
 
         const mm = gsap.matchMedia();
 
-        mm.add('(min-width: 992px)', () => handleDesktop(self, body, items, `fs${index}`));
+        mm.add('(min-width: 992px)', () => handleDesktop(self, body, items));
     };
 
-    const handleDesktop = (self, body, items, uid) => {
-        body.insertAdjacentHTML('afterbegin', graphicHTML(uid));
+    const handleDesktop = (self, body, items) => {
+        body.insertAdjacentHTML('afterbegin', graphicHTML());
 
         const graphic = body.querySelector('.fs-graphic');
         const top = graphic.querySelector('.fs-graphic-top');
