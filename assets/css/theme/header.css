@@ -76,6 +76,10 @@ header {
 				@apply flex;
 			}
 
+			&-logo-icon path {
+				@apply transition-colors duration-500 ease-power2-out;
+			}
+
 			&-panel {
 				@apply pointer-events-none invisible fixed inset-0 z-[-1];
 				@apply w-full h-[100svh] flex flex-col;
@@ -120,10 +124,21 @@ header {
 			&-actions .g-btn {
 				@apply w-full;
 			}
+
+			&-actions .g-btn {
+				padding-block: 1rem;
+				border-color: var(--_theme---button--primary-bg);
+				background-color: var(--_theme---button--primary-bg);
+				color: var(--_theme---surface--page);
+			}
 		}
 
 		&.mob-active {
 			.g-nav {
+				&-logo-icon path {
+					fill: #191b1a;
+				}
+
 				&-burger {
 					path {
 						&:nth-child(1) {
