@@ -1,5 +1,24 @@
 .content-stats-text {
+    .w-mod-js & {
+        .cst-word,
+        .cst-para {
+            @apply invisible opacity-0;
+        }
+    }
+
     .cst {
+        &-word {
+            @apply relative inline-block;
+
+            &::after {
+                @apply absolute left-0 right-0 bg-current origin-left;
+                content: "";
+                bottom: -0.06em;
+                height: 0.06em;
+                transform: scaleX(var(--cst-line, 0));
+            }
+        }
+
         &-value {
             font-variant-numeric: tabular-nums;
         }
