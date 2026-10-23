@@ -1,8 +1,9 @@
 import { defineBlock } from '../app/baunfire.js';
 
-export default defineBlock('section.fixed-scroll', (els) => {
+export default defineBlock('section.fixed-scroll', (els, baunfire) => {
     const GRAY = '#E3E1DE';
     const BASE = 355;
+    const MOBILE = { speed: 0.7 };
     const FLOW = { radius: 2, walkers: 5, walkerGap: 0.35, window: 0.68, drain: 0.15, nodeFade: 0.12, swap: 0.9 };
 
     const STEPS = [
@@ -124,6 +125,15 @@ export default defineBlock('section.fixed-scroll', (els) => {
         </div>
     `;
 
+    const mobileHTML = () => `
+        <div class="fs-mobile" aria-hidden="true">
+            <div class="fs-mobile-box">
+                ${backHTML()}
+                ${topHTML()}
+            </div>
+        </div>
+    `;
+
     const script = () => {
         els.forEach(self => handleGraphic(self));
     };
@@ -136,6 +146,76 @@ export default defineBlock('section.fixed-scroll', (els) => {
         const mm = gsap.matchMedia();
 
         mm.add('(min-width: 992px)', () => handleDesktop(self, body, items));
+        mm.add('(max-width: 991.98px)', () => handleMobile(items));
+    };
+
+    const createFlow = (graphic) => {
+        const nodes = [...graphic.querySelectorAll('.fs-graphic-node')];
+        const network = buildNetwork([...graphic.querySelectorAll('.fs-graphic-solid path')], nodes);
+        graphic.querySelector('.fs-graphic-flow').insertAdjacentHTML('beforeend', network.segments.map(segmentHTML).join(''));
+
+        const lights = [...graphic.querySelectorAll('.fs-graphic-light')];
+        const lengths = network.segments.map(segment => segment.length);
+
+        lights.forEach((light, i) => {
+            gsap.set(light, { strokeDasharray: `${lengths[i]} ${lengths[i] + 1}`, strokeDashoffset: lengths[i] });
+        });
+
+        return {
+            nodes,
+            lights,
+            lengths,
+            hop: network.hop,
+            segmentDelay: (j) => network.segments[j].delay,
+            nodeDelay: (j) => network.nodeTimes[j]
+        };
+    };
+
+    const handleMobile = (items) => {
+        const steps = STEPS.slice(0, items.length);
+        const octagons = items.map(item => item.querySelector('.fs-octagon'));
+
+        octagons.forEach((octagon, i) => {
+            if (!octagon || i === 0) return;
+
+            const step = steps[i];
+
+            octagon.classList.add('is-animated');
+            octagon.insertAdjacentHTML('beforeend', mobileHTML());
+
+            const graphic = octagon.querySelector('.fs-mobile');
+            const back = graphic.querySelector('.fs-graphic-back');
+            const top = graphic.querySelector('.fs-graphic-top');
+            const flow = createFlow(graphic);
+
+            gsap.set(back, { xPercent: -50, yPercent: -50, width: `${steps[0].size / step.size * 100}%` });
+            gsap.set(top, {
+                xPercent: -50,
+                yPercent: -50,
+                '--fs-color': GRAY,
+                '--fs-light': step.color,
+                '--fs-solid': 'transparent'
+            });
+
+            const tl = gsap.timeline({ paused: true })
+                .to(flow.lights, { strokeDashoffset: 0, duration: flow.hop, ease: 'none', stagger: flow.segmentDelay }, 0)
+                .to(flow.nodes, { fill: step.color, duration: FLOW.nodeFade, ease: 'neutral', stagger: flow.nodeDelay }, 0)
+                .timeScale(MOBILE.speed);
+
+            ScrollTrigger.create({
+                trigger: octagon,
+                start: baunfire.anim.start,
+                once: true,
+                onEnter: () => tl.play()
+            });
+        });
+
+        return () => {
+            octagons.forEach(octagon => {
+                octagon?.classList.remove('is-animated');
+                octagon?.querySelector('.fs-mobile')?.remove();
+            });
+        };
     };
 
     const handleDesktop = (self, body, items) => {
@@ -144,13 +224,7 @@ export default defineBlock('section.fixed-scroll', (els) => {
         const graphic = body.querySelector('.fs-graphic');
         const top = graphic.querySelector('.fs-graphic-top');
         const box = graphic.querySelector('.fs-graphic-box');
-        const nodes = [...graphic.querySelectorAll('.fs-graphic-node')];
-        const network = buildNetwork([...graphic.querySelectorAll('.fs-graphic-solid path')], nodes);
-        graphic.querySelector('.fs-graphic-flow').insertAdjacentHTML('beforeend', network.segments.map(segmentHTML).join(''));
-        const lights = [...graphic.querySelectorAll('.fs-graphic-light')];
-        const lengths = network.segments.map(segment => segment.length);
-        const segmentDelay = (j) => network.segments[j].delay;
-        const nodeDelay = (j) => network.nodeTimes[j];
+        const { nodes, lights, lengths, hop, segmentDelay, nodeDelay } = createFlow(graphic);
         const steps = STEPS.slice(0, items.length);
         const octagons = items.slice(0, steps.length).map(item => item.querySelector('.fs-octagon'));
         let widths = [];
@@ -180,10 +254,6 @@ export default defineBlock('section.fixed-scroll', (els) => {
             '--fs-color': steps[0].color,
             '--fs-light': steps[0].color,
             '--fs-solid': 'transparent'
-        });
-
-        lights.forEach((light, i) => {
-            gsap.set(light, { strokeDasharray: `${lengths[i]} ${lengths[i] + 1}`, strokeDashoffset: lengths[i] });
         });
 
         const tl = gsap.timeline({
@@ -242,7 +312,7 @@ export default defineBlock('section.fixed-scroll', (els) => {
                     { strokeDashoffset: (j) => lengths[j] },
                     {
                         strokeDashoffset: 0,
-                        duration: network.hop,
+                        duration: hop,
                         stagger: segmentDelay,
                         immediateRender: false
                     },

@@ -8,6 +8,36 @@
             @media (min-width: 62rem) {
                 background: none;
             }
+
+            &.is-animated {
+                @apply relative;
+
+                .fs-oct {
+                    @apply invisible;
+                }
+            }
+        }
+
+        &-mobile {
+            @apply absolute inset-0 flex items-center justify-center pointer-events-none;
+        }
+
+        &-mobile-box {
+            @apply relative h-full max-w-full;
+            aspect-ratio: 355 / 340;
+
+            .fs-graphic-back,
+            .fs-graphic-top {
+                @apply absolute left-1/2 top-1/2 block h-auto;
+            }
+
+            .fs-graphic-top {
+                @apply w-full;
+
+                svg {
+                    @apply block w-full h-auto;
+                }
+            }
         }
 
         &-graphic {

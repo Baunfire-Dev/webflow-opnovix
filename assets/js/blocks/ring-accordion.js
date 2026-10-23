@@ -100,7 +100,7 @@ export default defineBlock('section.ring-accordion', (els) => {
         let stopTimer;
 
         const resetRing = () => {
-            const animated = [...progress, ...stops, glow].filter(Boolean);
+            const animated = [...progress, ...stops, ...labels, glow].filter(Boolean);
             animated.forEach(node => { node.style.transition = 'none'; });
 
             progress.forEach(circle => {
@@ -109,6 +109,7 @@ export default defineBlock('section.ring-accordion', (els) => {
             });
             stops.forEach(stop => stop.classList.remove('is-active', 'is-passed', 'is-start'));
             glow?.classList.remove('is-visible');
+            labels.forEach(label => label.classList.add('is-hidden'));
 
             svg.getBoundingClientRect();
             animated.forEach(node => { node.style.transition = ''; });
