@@ -36,7 +36,7 @@ header {
 		}
 	}
 
-	@media (min-width: 75rem) {
+	@media (min-width: 48rem) {
 		.g-nav {
 			&-burger {
 				@apply hidden;
@@ -70,7 +70,7 @@ header {
 		}
 	}
 
-	@media not all and (min-width: 75rem) {
+	@media not all and (min-width: 48rem) {
 		.g-nav {
 			&-burger.g-code-embed {
 				@apply flex;

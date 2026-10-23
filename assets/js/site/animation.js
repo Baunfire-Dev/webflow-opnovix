@@ -26,7 +26,7 @@ export const Animation = {
         const desktopDD = () => {
             const mm = gsap.matchMedia();
 
-            mm.add("(min-width: 992px)", () => {
+            mm.add("(min-width: 768px)", () => {
                 const controller = new AbortController();
                 const { signal } = controller;
 
@@ -102,7 +102,7 @@ export const Animation = {
 
             const mm = gsap.matchMedia();
 
-            mm.add("(max-width: 1199.98px)", () => {
+            mm.add("(max-width: 767.98px)", () => {
                 const controller = new AbortController();
                 const { signal } = controller;
 
