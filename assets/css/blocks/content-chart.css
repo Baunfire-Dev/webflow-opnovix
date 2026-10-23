@@ -8,9 +8,9 @@
                 fill: currentColor;
             }
 
-            &.is-compact {
-                .cc-tick,
-                .cc-pill text {
+            &.is-compact .cc {
+                &-tick,
+                &-pill text {
                     font-size: 0.75rem;
                 }
             }

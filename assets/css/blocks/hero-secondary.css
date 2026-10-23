@@ -1,9 +1,9 @@
 .hero-secondary {
     @apply overflow-y-visible z-[2] contain-none;
 
-    .w-mod-js & {
-        .hs-head > *,
-        .hs-para-wrap {
+    .w-mod-js & .hs {
+        &-head > *,
+        &-para-wrap {
             @apply invisible opacity-0;
         }
     }

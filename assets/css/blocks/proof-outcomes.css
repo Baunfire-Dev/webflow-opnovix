@@ -15,25 +15,25 @@
             gap: var(--_spacing---space--md);
         }
 
-        &-chart.is-compact {
-            .po-legend {
+        &-chart.is-compact .po {
+            &-legend {
                 @apply static w-auto flex-row flex-wrap;
                 gap: 0.5rem 0.875rem;
                 margin-bottom: 1.25rem;
             }
 
-            .po-legend-item {
+            &-legend-item {
                 gap: 0.375rem;
             }
 
-            .po-tick,
-            .po-pill text {
+            &-tick,
+            &-pill text {
                 @apply normal-case;
                 font-family: var(--_typography---font--body);
                 letter-spacing: normal;
             }
 
-            .po-pill text {
+            &-pill text {
                 @apply font-medium;
             }
         }

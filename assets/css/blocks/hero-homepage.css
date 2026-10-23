@@ -1,7 +1,7 @@
 .hero-homepage {
-    .w-mod-js & {
-        .hh-content-inner > *,
-        .hh-ctas {
+    .w-mod-js & .hh {
+        &-content-inner > *,
+        &-ctas {
             @apply invisible opacity-0;
         }
     }

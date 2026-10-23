@@ -1,7 +1,7 @@
 .content-stats-text {
-    .w-mod-js & {
-        .cst-word,
-        .cst-para {
+    .w-mod-js & .cst {
+        &-word,
+        &-para {
             @apply invisible opacity-0;
         }
     }

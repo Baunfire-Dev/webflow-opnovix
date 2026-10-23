@@ -5,10 +5,14 @@
     .tl {
         &-card,
         &-advisor {
-            cursor: pointer;
+            @apply cursor-pointer;
 
             &.is-empty {
-                cursor: auto;
+                @apply cursor-auto;
+
+                .tl-btn {
+                    @apply hidden;
+                }
             }
         }
 
@@ -17,104 +21,93 @@
         }
 
         &-card-overlay {
-            overflow-y: auto;
-            opacity: 0;
-            visibility: hidden;
+            @apply overflow-y-auto invisible opacity-0;
             transition:
                 opacity 0.25s var(--tl-ease-out),
                 visibility 0s linear 0.25s;
         }
 
         &-card-bio {
-            opacity: 0;
+            @apply opacity-0;
             transform: translateY(0.5rem);
             transition:
                 opacity 0.3s var(--tl-ease-out),
                 transform 0.3s var(--tl-ease-out);
         }
 
-        &-card {
-            &.is-open {
-                .tl-card-overlay {
-                    opacity: 1;
-                    visibility: visible;
+        &-card.is-open {
+            .tl {
+                &-card-overlay {
+                    @apply visible opacity-100;
                     transition:
                         opacity 0.25s var(--tl-ease-out),
                         visibility 0s linear 0s;
                 }
 
-                .tl-card-bio {
-                    opacity: 1;
+                &-card-bio {
+                    @apply opacity-100;
                     transform: translateY(0);
                     transition:
                         opacity 0.3s var(--tl-ease-out) 0.06s,
                         transform 0.3s var(--tl-ease-out) 0.06s;
                 }
 
-                .tl-btn-icon {
+                &-btn-icon {
                     transform: rotate(45deg);
                 }
-            }
-
-            &.is-empty .tl-btn {
-                display: none;
             }
         }
 
         &-advisor {
-            align-items: flex-start;
-
-            .tl-advisor-body {
-                padding-top: 0.9375rem;
-                transition: padding-top 0.3s var(--tl-ease-move);
-            }
+            @apply items-start;
 
             .tl-btn {
                 margin-top: 1.3125rem;
                 transition: margin-top 0.3s var(--tl-ease-move);
             }
+        }
 
-            .tl-advisor-bio {
-                grid-template-rows: 0fr;
-                transition: grid-template-rows 0.3s var(--tl-ease-move);
-            }
+        &-advisor-body {
+            padding-top: 0.9375rem;
+            transition: padding-top 0.3s var(--tl-ease-move);
+        }
 
-            .tl-advisor-bio-inner {
-                opacity: 0;
-                visibility: hidden;
-                transition:
-                    opacity 0.2s var(--tl-ease-out),
-                    visibility 0s linear 0.3s;
-            }
+        &-advisor-bio {
+            grid-template-rows: 0fr;
+            transition: grid-template-rows 0.3s var(--tl-ease-move);
+        }
 
-            &.is-open {
-                .tl-advisor-body {
+        &-advisor-bio-inner {
+            @apply invisible opacity-0;
+            transition:
+                opacity 0.2s var(--tl-ease-out),
+                visibility 0s linear 0.3s;
+        }
+
+        &-advisor.is-open {
+            .tl {
+                &-advisor-body {
                     padding-top: 0;
                 }
 
-                .tl-btn {
+                &-btn {
                     margin-top: 0;
                 }
 
-                .tl-advisor-bio {
+                &-advisor-bio {
                     grid-template-rows: 1fr;
                 }
 
-                .tl-advisor-bio-inner {
-                    opacity: 1;
-                    visibility: visible;
+                &-advisor-bio-inner {
+                    @apply visible opacity-100;
                     transition:
                         opacity 0.3s var(--tl-ease-out) 0.1s,
                         visibility 0s linear 0s;
                 }
 
-                .tl-btn-icon {
+                &-btn-icon {
                     transform: rotate(45deg);
                 }
-            }
-
-            &.is-empty .tl-btn {
-                display: none;
             }
         }
     }
