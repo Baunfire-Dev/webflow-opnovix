@@ -121,7 +121,7 @@
                 transition: opacity 0.8s var(--cubic-ease), transform 0.8s var(--cubic-ease);
 
                 .ra-item-icon-vertical {
-                    scale: 0;
+                    scale: 1;
                     transition: scale 0.8s var(--cubic-ease);
                 }
             }
@@ -154,7 +154,7 @@
                     transform: rotate(360deg);
 
                     .ra-item-icon-vertical {
-                        scale: 1;
+                        scale: 0;
                     }
                 }
             }
