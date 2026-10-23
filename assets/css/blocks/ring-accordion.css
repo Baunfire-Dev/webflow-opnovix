@@ -26,6 +26,11 @@
                 stroke 0.4s var(--ra-ease),
                 transform 0.4s var(--ra-ease);
 
+            &.is-start {
+                fill: #f9a98a;
+                stroke: transparent;
+            }
+
             &.is-passed {
                 fill: #f9a98a;
                 stroke: transparent;
@@ -34,7 +39,7 @@
             &.is-active {
                 fill: #ff696a;
                 stroke: transparent;
-                transform: scale(1.45);
+                transform: scale(1.6);
             }
         }
 

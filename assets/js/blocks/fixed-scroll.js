@@ -3,6 +3,7 @@ import { defineBlock } from '../app/baunfire.js';
 export default defineBlock('section.fixed-scroll', (els) => {
     const GRAY = '#E3E1DE';
     const BASE = 355;
+    const FLOW = { radius: 2, walkers: 5, walkerGap: 0.35, window: 0.68, drain: 0.15, nodeFade: 0.12, swap: 0.9 };
 
     const STEPS = [
         { size: 310, color: GRAY },
@@ -113,7 +114,8 @@ export default defineBlock('section.fixed-scroll', (els) => {
                 <defs>${TOP_ACCENTS.map((accent, i) => gradientHTML(uid, accent, i)).join('')}</defs>
                 ${TOP_LINES.map(d => `<path d="${d}" stroke="${GRAY}" vector-effect="non-scaling-stroke"/>`).join('')}
                 ${TOP_ACCENTS.map((accent, i) => `<path d="${accent.d}" stroke="url(#${uid}-g${i})" vector-effect="non-scaling-stroke"/>`).join('')}
-                ${TOP_LINES.map(d => `<path class="fs-graphic-light" d="${d}"/>`).join('')}
+                <g class="fs-graphic-solid">${TOP_LINES.map(d => `<path d="${d}"/>`).join('')}</g>
+                <g class="fs-graphic-flow"></g>
                 ${TOP_NODES.map(d => `<path class="fs-graphic-node" d="${d}"/>`).join('')}
             </svg>
         </div>
@@ -150,8 +152,13 @@ export default defineBlock('section.fixed-scroll', (els) => {
         const graphic = body.querySelector('.fs-graphic');
         const top = graphic.querySelector('.fs-graphic-top');
         const box = graphic.querySelector('.fs-graphic-box');
+        const nodes = [...graphic.querySelectorAll('.fs-graphic-node')];
+        const network = buildNetwork([...graphic.querySelectorAll('.fs-graphic-solid path')], nodes);
+        graphic.querySelector('.fs-graphic-flow').insertAdjacentHTML('beforeend', network.segments.map(segmentHTML).join(''));
         const lights = [...graphic.querySelectorAll('.fs-graphic-light')];
-        const lengths = lights.map(light => light.getTotalLength());
+        const lengths = network.segments.map(segment => segment.length);
+        const segmentDelay = (j) => network.segments[j].delay;
+        const nodeDelay = (j) => network.nodeTimes[j];
         const steps = STEPS.slice(0, items.length);
         const octagons = items.slice(0, steps.length).map(item => item.querySelector('.fs-octagon'));
         let widths = [];
@@ -179,12 +186,12 @@ export default defineBlock('section.fixed-scroll', (els) => {
             autoAlpha: 0,
             scale: scaleAt(0),
             '--fs-color': steps[0].color,
-            '--fs-light': steps[0].color
+            '--fs-light': steps[0].color,
+            '--fs-solid': 'transparent'
         });
 
         lights.forEach((light, i) => {
-            const dash = lengths[i] * 0.25;
-            gsap.set(light, { strokeDasharray: `${dash} ${lengths[i] + dash}`, strokeDashoffset: dash });
+            gsap.set(light, { strokeDasharray: `${lengths[i]} ${lengths[i] + 1}`, strokeDashoffset: lengths[i] });
         });
 
         const tl = gsap.timeline({
@@ -202,34 +209,57 @@ export default defineBlock('section.fixed-scroll', (els) => {
         steps.slice(1).forEach((step, i) => {
             const at = i + 0.15;
             const prev = steps[i];
+            const draw = at + (i === 0 ? 0 : FLOW.drain);
 
             if (i === 0) tl.fromTo(top, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.25, immediateRender: false }, at);
 
+            if (i > 0) {
+                tl.fromTo(top,
+                    { '--fs-solid': prev.color, '--fs-color': prev.color, '--fs-light': prev.color },
+                    { '--fs-solid': GRAY, '--fs-color': GRAY, '--fs-light': GRAY, duration: FLOW.drain, ease: 'neutral', immediateRender: false },
+                    at
+                )
+                    .fromTo(nodes,
+                        { fill: prev.color },
+                        { fill: GRAY, duration: FLOW.drain, ease: 'neutral', immediateRender: false },
+                        at
+                    );
+            }
+
             tl.fromTo(top,
-                { '--fs-light': prev.color },
-                { '--fs-light': step.color, duration: 0, immediateRender: false },
-                at
+                { '--fs-solid': i === 0 ? 'transparent' : GRAY, '--fs-color': GRAY },
+                { '--fs-solid': step.color, '--fs-color': step.color, duration: 0, immediateRender: false },
+                at + FLOW.swap
             )
                 .fromTo(top,
-                    { scale: () => scaleAt(i), '--fs-color': prev.color },
-                    {
-                        scale: () => scaleAt(i + 1),
-                        '--fs-color': step.color,
-                        duration: 0.7,
-                        ease: 'neutral',
-                        immediateRender: false
-                    },
+                    { '--fs-light': i === 0 ? prev.color : GRAY },
+                    { '--fs-light': step.color, duration: 0, immediateRender: false },
+                    draw
+                )
+                .fromTo(top,
+                    { scale: () => scaleAt(i) },
+                    { scale: () => scaleAt(i + 1), duration: 0.7, ease: 'neutral', immediateRender: false },
                     at
                 )
                 .fromTo(lights,
-                    { strokeDashoffset: (j) => lengths[j] * 0.25 },
+                    { strokeDashoffset: 0 },
+                    { strokeDashoffset: (j) => lengths[j], duration: 0, immediateRender: false },
+                    draw
+                )
+                .fromTo(lights,
+                    { strokeDashoffset: (j) => lengths[j] },
                     {
-                        strokeDashoffset: (j) => -lengths[j],
-                        duration: 0.5,
-                        stagger: { each: 0.03, from: 'random' },
+                        strokeDashoffset: 0,
+                        duration: network.hop,
+                        stagger: segmentDelay,
                         immediateRender: false
                     },
-                    at
+                    draw
+                )
+                .fromTo(nodes,
+                    { fill: GRAY },
+                    { fill: step.color, duration: FLOW.nodeFade, ease: 'neutral', stagger: nodeDelay, immediateRender: false },
+                    draw
                 );
         });
 
@@ -241,6 +271,104 @@ export default defineBlock('section.fixed-scroll', (els) => {
             self.style.removeProperty('--fs-oct-w');
             graphic.remove();
         };
+    };
+
+    const segmentHTML = ({ x1, y1, x2, y2 }) => `
+        <path class="fs-graphic-light" d="M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}"/>
+    `;
+
+    const pick = (list) => list[Math.floor(Math.random() * list.length)];
+
+    const walk = (edges, points) => {
+        const remaining = new Set(edges);
+        const open = (point) => edges.filter(edge => remaining.has(edge) && (edge.a.point === point || edge.b.point === point));
+        const starts = [...points].sort(() => Math.random() - 0.5).slice(0, FLOW.walkers);
+        const walkers = starts.map((point, i) => ({ point, time: i * FLOW.walkerGap }));
+
+        while (remaining.size) {
+            const walker = walkers.reduce((first, item) => (item.time < first.time ? item : first));
+            let options = open(walker.point);
+
+            if (!options.length) {
+                const edge = pick([...remaining]);
+                walker.point = pick([edge.a.point, edge.b.point]);
+                options = open(walker.point);
+            }
+
+            const edge = pick(options);
+            const forward = edge.a.point === walker.point;
+
+            remaining.delete(edge);
+            edge.from = forward ? edge.a : edge.b;
+            edge.to = forward ? edge.b : edge.a;
+            edge.delay = walker.time;
+            walker.time += 1;
+            walker.point = edge.to.point;
+        }
+
+        const hop = FLOW.window / Math.max(...edges.map(edge => edge.delay + 1));
+        edges.forEach(edge => { edge.delay *= hop; });
+
+        return hop;
+    };
+
+    const buildNetwork = (paths, nodes) => {
+        const box = paths[0].getBBox();
+        const spacing = box.width / (FLOW.radius * 2);
+        const rise = spacing * Math.sqrt(3) / 2;
+        const center = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+        const points = [];
+
+        for (let q = -FLOW.radius; q <= FLOW.radius; q++) {
+            for (let r = -FLOW.radius; r <= FLOW.radius; r++) {
+                if (Math.abs(q + r) > FLOW.radius) continue;
+                points.push({ x: center.x + (q + r / 2) * spacing, y: center.y + r * rise });
+            }
+        }
+
+        const nearest = (x, y) => points.reduce((best, point) => (
+            Math.hypot(point.x - x, point.y - y) < Math.hypot(best.x - x, best.y - y) ? point : best
+        ));
+
+        const edges = paths.flatMap(path => {
+            const total = path.getTotalLength();
+            const count = Math.max(1, Math.round(total / spacing));
+            const marks = Array.from({ length: count + 1 }, (_, i) => path.getPointAtLength(total * i / count));
+
+            return marks.slice(0, -1).map((mark, i) => {
+                const next = marks[i + 1];
+
+                return {
+                    a: { x: mark.x, y: mark.y, point: nearest(mark.x, mark.y) },
+                    b: { x: next.x, y: next.y, point: nearest(next.x, next.y) },
+                    length: Math.hypot(next.x - mark.x, next.y - mark.y)
+                };
+            });
+        });
+
+        const hop = walk(edges, points);
+
+        const segments = edges.map(edge => ({
+            x1: edge.from.x,
+            y1: edge.from.y,
+            x2: edge.to.x,
+            y2: edge.to.y,
+            delay: edge.delay,
+            length: edge.length
+        }));
+
+        const reachedAt = (point) => Math.min(...edges.flatMap(edge => {
+            if (edge.from.point === point) return [edge.delay];
+            if (edge.to.point === point) return [edge.delay + hop];
+            return [];
+        }));
+
+        const nodeTimes = nodes.map(node => {
+            const nodeBox = node.getBBox();
+            return reachedAt(nearest(nodeBox.x + nodeBox.width / 2, nodeBox.y + nodeBox.height / 2));
+        });
+
+        return { segments, nodeTimes, hop };
     };
 
     script();

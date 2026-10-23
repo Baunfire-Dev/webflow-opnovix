@@ -7,6 +7,12 @@ export default defineBlock('section.ring-accordion', (els) => {
     const LABEL_FADE = 200;
     const STOP_DELAY = RING_DURATION * 0.6;
     const GLOW_DELAY = RING_DURATION * 0.35;
+    const START_DELAY = 400;
+    const RING_COLORS = ['#f9a98a', '#ff696a'];
+    const SECTORS = 90;
+    const SECTOR_WIDTH = 10;
+    const STOP_POINTS = '-5,0 -2.5,-4.33 2.5,-4.33 5,0 2.5,4.33 -2.5,4.33';
+    let ringCount = 0;
 
     const script = () => {
         els.forEach(self => handleAccordion(self));
@@ -47,8 +53,10 @@ export default defineBlock('section.ring-accordion', (els) => {
         ring.setLabels(activeIndex);
 
         const reveal = () => {
-            inView = true;
-            ring.update(activeIndex);
+            ring.reveal(() => {
+                inView = true;
+                ring.update(activeIndex);
+            });
         };
 
         if (!('IntersectionObserver' in window)) {
@@ -72,13 +80,18 @@ export default defineBlock('section.ring-accordion', (els) => {
         const svg = self.querySelector('.ra-ring');
         if (!svg) return null;
 
+        const colors = buildRing(svg, items.length);
+
         const progress = svg.querySelectorAll('.ra-ring-progress');
         const stops = [...svg.querySelectorAll('.ra-ring-stop')];
         const glow = svg.querySelector('.ra-ring-glow');
         const labels = self.querySelectorAll('.ra-ring-label');
         const title = self.querySelector('.ra-ring-title');
         const count = self.querySelector('.ra-ring-count');
-        const total = stops.length || items.length;
+        const total = items.length;
+        const start = stops[stops.length - 1];
+        const sectors = [...svg.querySelectorAll('.ra-ring-fill path')];
+        const span = { value: 1 / total };
         const titles = [...items].map(item => item.querySelector('.ra-item-title')?.textContent.trim() ?? '');
 
         let current = -1;
@@ -94,7 +107,7 @@ export default defineBlock('section.ring-accordion', (els) => {
                 circle.style.strokeDasharray = `${CIRCUMFERENCE} ${CIRCUMFERENCE}`;
                 circle.style.strokeDashoffset = CIRCUMFERENCE;
             });
-            stops.forEach(stop => stop.classList.remove('is-active', 'is-passed'));
+            stops.forEach(stop => stop.classList.remove('is-active', 'is-passed', 'is-start'));
             glow?.classList.remove('is-visible');
 
             svg.getBoundingClientRect();
@@ -106,9 +119,26 @@ export default defineBlock('section.ring-accordion', (els) => {
             if (count) count.textContent = `${pad(index + 1)} / ${pad(total)}`;
         };
 
+        const paint = () => {
+            sectors.forEach((sector, i) => {
+                const amount = Math.min(1, (i + 0.5) / SECTORS / span.value);
+                sector.setAttribute('fill', mix(colors[0], colors[1], amount));
+            });
+        };
+
         const drawProgress = (step) => {
             const offset = CIRCUMFERENCE * (1 - step / total);
             progress.forEach(circle => { circle.style.strokeDashoffset = offset; });
+
+            if (!sectors.length) return;
+
+            gsap.to(span, {
+                value: step / total,
+                duration: RING_DURATION / 1000,
+                ease: 'power2.inOut',
+                overwrite: true,
+                onUpdate: paint
+            });
         };
 
         const updateStops = (index) => {
@@ -160,9 +190,82 @@ export default defineBlock('section.ring-accordion', (els) => {
             swapLabels(index);
         };
 
-        resetRing();
+        const reveal = (callback) => {
+            start?.classList.add('is-start');
+            setTimeout(callback, START_DELAY);
+        };
 
-        return { update, setLabels };
+        resetRing();
+        if (sectors.length) paint();
+
+        return { update, setLabels, reveal };
+    };
+
+    const point = (radius, angle) => [radius * Math.cos(angle), radius * Math.sin(angle)].map(value => value.toFixed(2));
+
+    const mix = (from, to, amount) => {
+        const channels = (hex) => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16));
+        const a = channels(from);
+        const b = channels(to);
+        return `rgb(${a.map((value, i) => Math.round(value + (b[i] - value) * amount)).join(',')})`;
+    };
+
+    const sectorHTML = (index) => {
+        const outer = RADIUS + SECTOR_WIDTH;
+        const inner = RADIUS - SECTOR_WIDTH;
+        const from = -Math.PI / 2 + (index / SECTORS) * Math.PI * 2;
+        const to = -Math.PI / 2 + ((index + 1.5) / SECTORS) * Math.PI * 2;
+        const [ax, ay] = point(outer, from);
+        const [bx, by] = point(outer, to);
+        const [cx, cy] = point(inner, to);
+        const [dx, dy] = point(inner, from);
+
+        return `<path d="M${ax} ${ay}A${outer} ${outer} 0 0 1 ${bx} ${by}L${cx} ${cy}A${inner} ${inner} 0 0 0 ${dx} ${dy}Z"></path>`;
+    };
+
+    const stopHTML = (index, total) => {
+        const [x, y] = point(RADIUS, -Math.PI / 2 + ((index + 1) / total) * Math.PI * 2);
+
+        return `
+            <g transform="translate(${x} ${y})">
+                <polygon class="ra-ring-stop" points="${STOP_POINTS}" fill="#5b183f" stroke="rgba(255,255,255,.4)" stroke-width="1.5"></polygon>
+            </g>
+        `;
+    };
+
+    const maskHTML = (id) => `
+        <mask id="${id}" maskUnits="userSpaceOnUse" x="-180" y="-180" width="360" height="360">
+            <g transform="rotate(-90)"></g>
+        </mask>
+    `;
+
+    const buildRing = (svg, total) => {
+        svg.querySelectorAll('.ra-ring-stop').forEach(stop => {
+            const parent = stop.parentElement;
+            (parent.matches('g') && parent.childElementCount === 1 ? parent : stop).remove();
+        });
+
+        svg.insertAdjacentHTML('beforeend', Array.from({ length: total }, (_, i) => stopHTML(i, total)).join(''));
+
+        const line = svg.querySelector('.ra-ring-progress--line');
+        if (!line) return RING_COLORS;
+
+        const stopColors = [...svg.querySelectorAll('linearGradient stop')].map(stop => stop.getAttribute('stop-color'));
+        const colors = stopColors.length > 1 ? [stopColors[0], stopColors[stopColors.length - 1]] : RING_COLORS;
+        const id = `ra-ring-mask-${ringCount++}`;
+        const defs = svg.querySelector('defs') ?? svg.insertAdjacentElement('afterbegin', document.createElementNS('http://www.w3.org/2000/svg', 'defs'));
+
+        line.parentElement.insertAdjacentHTML('afterend', `
+            <g class="ra-ring-fill" mask="url(#${id})">
+                ${Array.from({ length: SECTORS }, (_, i) => sectorHTML(i)).join('')}
+            </g>
+        `);
+
+        defs.insertAdjacentHTML('beforeend', maskHTML(id));
+        line.setAttribute('stroke', '#fff');
+        defs.lastElementChild.querySelector('g').append(line);
+
+        return colors;
     };
 
     const pad = (number) => String(number).padStart(2, '0');

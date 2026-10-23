@@ -43,9 +43,16 @@
             fill: var(--fs-color);
         }
 
+        &-graphic-solid {
+            fill: none;
+            stroke: var(--fs-solid);
+            stroke-width: 1;
+            stroke-linecap: round;
+        }
+
         &-graphic-light {
             stroke: var(--fs-light);
-            stroke-width: 1.5;
+            stroke-width: 1;
             stroke-linecap: round;
         }
     }
