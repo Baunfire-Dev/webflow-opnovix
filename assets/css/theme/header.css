@@ -1,6 +1,12 @@
 header {
 	@apply transition-all duration-500 ease-power2-out;
 
+	a,
+	.g-nav-burger {
+		-webkit-tap-highlight-color: transparent;
+		@apply select-none;
+	}
+
 	.g-nav {
 		&-burger {
 			@apply cursor-pointer;
