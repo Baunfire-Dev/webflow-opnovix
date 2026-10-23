@@ -5,18 +5,18 @@ const baunfire = {
         start: "top 60%"
     },
     lenis: null,
-    init() {
+    async init() {
         if (this.initialized) return;
         this.initialized = true;
 
-        this.modules.forEach(mod => {
-            if (typeof mod.init !== 'function') return;
+        for (const mod of this.modules) {
+            if (typeof mod.init !== 'function') continue;
 
             let els;
 
             if (mod.selector) {
                 els = document.querySelectorAll(mod.selector);
-                if (!els.length) return;
+                if (!els.length) continue;
             }
 
             try {
@@ -25,8 +25,11 @@ const baunfire = {
                 baunfire.Global?.fancyLog(err, 'error');
                 console.error(err);
             }
-        });
 
+            await yieldToMain();
+        }
+
+        window.ScrollTrigger?.refresh();
         document.dispatchEvent(new CustomEvent('baunfire:ready'));
     },
     addModule(mod) {
@@ -38,12 +41,18 @@ const baunfire = {
     smoothScroll() {
         this.lenis = window.__lenis;
     },
-    ready(callback) {
+    async ready(callback) {
         baunfire.smoothScroll();
-        baunfire.init();
+        await baunfire.init();
         if (typeof callback === 'function') callback(baunfire);
     }
 };
+
+const yieldToMain = () => (
+    window.scheduler?.yield
+        ? window.scheduler.yield()
+        : new Promise(resolve => setTimeout(resolve, 0))
+);
 
 window.baunfire = baunfire;
 
