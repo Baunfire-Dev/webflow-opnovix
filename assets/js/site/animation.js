@@ -245,109 +245,120 @@ export const Animation = {
         const hexes = [...svg.querySelectorAll("path")];
         if (!hexes.length) return;
 
-        const EXPLODE = {
-            fragments: 2,
-            minDistance: 0.08,
-            maxDistance: 0.35,
-            spread: 0.45,
-            hexScale: [0.25, 0.45],
-            fragmentScale: [0.12, 0.3],
-            rotation: 90,
-            duration: 2.6,
-            stagger: 0.2,
-            ease: "power2-out",
-            reformSpeed: 1.4,
-            bottomOffset: 4,
-            seed: 2026
-        };
-
-        const createRandom = (seed) => {
-            let state = seed;
-
-            return () => {
-                state |= 0;
-                state = state + 0x6D2B79F5 | 0;
-                let value = Math.imul(state ^ state >>> 15, 1 | state);
-                value = value + Math.imul(value ^ value >>> 7, 61 | value) ^ value;
-                return ((value ^ value >>> 14) >>> 0) / 4294967296;
+        const build = () => {
+            const EXPLODE = {
+                fragments: 2,
+                minDistance: 0.08,
+                maxDistance: 0.35,
+                spread: 0.45,
+                hexScale: [0.25, 0.45],
+                fragmentScale: [0.12, 0.3],
+                rotation: 90,
+                duration: 2.6,
+                stagger: 0.2,
+                ease: "power2-out",
+                reformSpeed: 1.4,
+                bottomOffset: 4,
+                seed: 2026
             };
-        };
 
-        const between = (random, [min, max]) => min + random() * (max - min);
+            const createRandom = (seed) => {
+                let state = seed;
 
-        const getDistance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+                return () => {
+                    state |= 0;
+                    state = state + 0x6D2B79F5 | 0;
+                    let value = Math.imul(state ^ state >>> 15, 1 | state);
+                    value = value + Math.imul(value ^ value >>> 7, 61 | value) ^ value;
+                    return ((value ^ value >>> 14) >>> 0) / 4294967296;
+                };
+            };
 
-        const createPieces = (hex) => {
-            const bounds = hex.getBBox();
-            const origin = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+            const between = (random, [min, max]) => min + random() * (max - min);
 
-            const fragments = Array.from({ length: EXPLODE.fragments }, () => {
-                const fragment = hex.cloneNode();
-                hex.after(fragment);
-                return { el: fragment, origin, isFragment: true };
+            const getDistance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+            const createPieces = (hex) => {
+                const bounds = hex.getBBox();
+                const origin = { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 };
+
+                const fragments = Array.from({ length: EXPLODE.fragments }, () => {
+                    const fragment = hex.cloneNode();
+                    hex.after(fragment);
+                    return { el: fragment, origin, isFragment: true };
+                });
+
+                return [{ el: hex, origin, isFragment: false }, ...fragments];
+            };
+
+            const random = createRandom(EXPLODE.seed);
+            const view = svg.viewBox.baseVal;
+            const size = Math.max(view.width, view.height);
+            const center = { x: view.x + view.width / 2, y: view.y + view.height / 2 };
+            const pieces = hexes.flatMap(hex => createPieces(hex));
+            const tl = gsap.timeline({ paused: true });
+
+            gsap.set(pieces.map(piece => piece.el), { transformOrigin: "50% 50%" });
+
+            pieces.forEach(piece => {
+                const outward = Math.atan2(piece.origin.y - center.y, piece.origin.x - center.x);
+                const angle = outward + (random() * 2 - 1) * EXPLODE.spread;
+                const closeness = Math.min(1, getDistance(piece.origin, center) / (size / 2));
+                const reach = (closeness + random()) / 2;
+                const distance = size * (EXPLODE.minDistance + (EXPLODE.maxDistance - EXPLODE.minDistance) * reach);
+                const delay = EXPLODE.stagger * closeness;
+
+                const to = {
+                    x: Math.cos(angle) * distance,
+                    y: Math.sin(angle) * distance,
+                    rotation: (random() * 2 - 1) * EXPLODE.rotation,
+                    scale: between(random, piece.isFragment ? EXPLODE.fragmentScale : EXPLODE.hexScale),
+                    opacity: 1,
+                    duration: EXPLODE.duration,
+                    ease: EXPLODE.ease
+                };
+
+                if (piece.isFragment) tl.fromTo(piece.el, { x: 0, y: 0, rotation: 0, scale: 0, opacity: 0 }, to, delay);
+                else tl.to(piece.el, to, delay);
             });
 
-            return [{ el: hex, origin, isFragment: false }, ...fragments];
-        };
+            let isExploded = false;
 
-        const random = createRandom(EXPLODE.seed);
-        const view = svg.viewBox.baseVal;
-        const size = Math.max(view.width, view.height);
-        const center = { x: view.x + view.width / 2, y: view.y + view.height / 2 };
-        const pieces = hexes.flatMap(hex => createPieces(hex));
-        const tl = gsap.timeline({ paused: true });
+            const setExploded = (state) => {
+                if (state === isExploded) return;
+                isExploded = state;
 
-        gsap.set(pieces.map(piece => piece.el), { transformOrigin: "50% 50%" });
-
-        pieces.forEach(piece => {
-            const outward = Math.atan2(piece.origin.y - center.y, piece.origin.x - center.x);
-            const angle = outward + (random() * 2 - 1) * EXPLODE.spread;
-            const closeness = Math.min(1, getDistance(piece.origin, center) / (size / 2));
-            const reach = (closeness + random()) / 2;
-            const distance = size * (EXPLODE.minDistance + (EXPLODE.maxDistance - EXPLODE.minDistance) * reach);
-            const delay = EXPLODE.stagger * closeness;
-
-            const to = {
-                x: Math.cos(angle) * distance,
-                y: Math.sin(angle) * distance,
-                rotation: (random() * 2 - 1) * EXPLODE.rotation,
-                scale: between(random, piece.isFragment ? EXPLODE.fragmentScale : EXPLODE.hexScale),
-                opacity: 1,
-                duration: EXPLODE.duration,
-                ease: EXPLODE.ease
+                if (state) tl.timeScale(1).play();
+                else tl.timeScale(EXPLODE.reformSpeed).reverse();
             };
 
-            if (piece.isFragment) tl.fromTo(piece.el, { x: 0, y: 0, rotation: 0, scale: 0, opacity: 0 }, to, delay);
-            else tl.to(piece.el, to, delay);
-        });
+            const lenis = window.__lenis;
 
-        let isExploded = false;
+            if (lenis) {
+                const check = () => setExploded(lenis.targetScroll >= lenis.limit - EXPLODE.bottomOffset);
+                lenis.on("scroll", check);
+                check();
+                return;
+            }
 
-        const setExploded = (state) => {
-            if (state === isExploded) return;
-            isExploded = state;
+            if (!window.ScrollTrigger) return;
 
-            if (state) tl.timeScale(1).play();
-            else tl.timeScale(EXPLODE.reformSpeed).reverse();
+            ScrollTrigger.create({
+                trigger: footer,
+                start: `bottom bottom+=${EXPLODE.bottomOffset}`,
+                onEnter: () => setExploded(true),
+                onLeaveBack: () => setExploded(false)
+            });
         };
 
-        const lenis = window.__lenis;
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some(entry => entry.isIntersecting)) return;
 
-        if (lenis) {
-            const check = () => setExploded(lenis.targetScroll >= lenis.limit - EXPLODE.bottomOffset);
-            lenis.on("scroll", check);
-            check();
-            return;
-        }
+            observer.disconnect();
+            build();
+        }, { rootMargin: "100% 0px" });
 
-        if (!window.ScrollTrigger) return;
-
-        ScrollTrigger.create({
-            trigger: footer,
-            start: `bottom bottom+=${EXPLODE.bottomOffset}`,
-            onEnter: () => setExploded(true),
-            onLeaveBack: () => setExploded(false)
-        });
+        observer.observe(footer);
     },
 };
 
