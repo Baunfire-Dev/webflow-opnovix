@@ -30,4 +30,27 @@
 			}
 		}
 	}
+
+	&:is(input) {
+		box-shadow:
+			-0.625rem 0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-left) / 0),
+			0.625rem -0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-right) / 0);
+		transition: box-shadow var(--btn-glow-duration) var(--btn-glow-ease);
+
+		&:not([disabled]) {
+			&:focus-visible {
+				box-shadow:
+					-0.625rem 0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-left) / var(--btn-glow-strength)),
+					0.625rem -0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-right) / var(--btn-glow-strength));
+			}
+
+			@media (hover: hover) {
+				&:hover {
+					box-shadow:
+						-0.625rem 0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-left) / var(--btn-glow-strength)),
+						0.625rem -0.25rem var(--btn-glow-blur) -0.125rem rgb(var(--btn-glow-right) / var(--btn-glow-strength));
+				}
+			}
+		}
+	}
 }
