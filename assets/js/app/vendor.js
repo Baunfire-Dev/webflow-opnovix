@@ -10,6 +10,7 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, CustomEase);
 Object.entries(motion.ease).forEach(([name, curve]) => CustomEase.create(name, curve.join(',')));
 
 const lenis = new Lenis({ anchors: true });
+new ResizeObserver(() => lenis.resize()).observe(document.body);
 lenis.on('scroll', ScrollTrigger.update);
 gsap.ticker.add((time) => lenis.raf(time * 1000));
 gsap.ticker.lagSmoothing(0);
