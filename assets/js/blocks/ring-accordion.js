@@ -8,6 +8,7 @@ export default defineBlock('section.ring-accordion', (els) => {
     const STOP_DELAY = RING_DURATION * 0.6;
     const GLOW_DELAY = RING_DURATION * 0.35;
     const START_DELAY = 400;
+    const MOBILE = { query: '(max-width: 991px)', startDelay: 120, threshold: 0.25 };
     const RING_COLORS = ['#f9a98a', '#ff696a'];
     const SECTORS = 90;
     const SECTOR_WIDTH = 10;
@@ -52,11 +53,13 @@ export default defineBlock('section.ring-accordion', (els) => {
 
         ring.setLabels(activeIndex);
 
+        const isMobile = window.matchMedia(MOBILE.query).matches;
+
         const reveal = () => {
             ring.reveal(() => {
                 inView = true;
                 ring.update(activeIndex);
-            });
+            }, isMobile ? MOBILE.startDelay : START_DELAY);
         };
 
         if (!('IntersectionObserver' in window)) {
@@ -71,9 +74,9 @@ export default defineBlock('section.ring-accordion', (els) => {
                 reveal();
                 observer.disconnect();
             });
-        }, { threshold: 0.3 });
+        }, { threshold: isMobile ? MOBILE.threshold : 0.3 });
 
-        observer.observe(self);
+        observer.observe(isMobile ? self.querySelector('.ra-ring') ?? self : self);
     };
 
     const createRing = (self, items) => {
@@ -191,9 +194,9 @@ export default defineBlock('section.ring-accordion', (els) => {
             swapLabels(index);
         };
 
-        const reveal = (callback) => {
+        const reveal = (callback, delay) => {
             start?.classList.add('is-start');
-            setTimeout(callback, START_DELAY);
+            setTimeout(callback, delay);
         };
 
         resetRing();

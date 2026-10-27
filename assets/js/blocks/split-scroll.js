@@ -5,6 +5,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
     const STEP_MOBILE = 0.6;
     const HOLD = 0.2;
     const EVEN = { hold: 1, fade: 0.6 };
+    const TEXT = { outDuration: 0.25, outEase: 'power1.in', inDuration: 0.5, inDelay: 0.25, inEase: 'power2.out' };
     const BLOOM = {
         duration: 1.2,
         ease: 'expo-out',
@@ -34,20 +35,13 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
         });
     };
 
-    const getEvenState = (progress, total) => {
+    const getEvenIndex = (progress, total) => {
         const span = EVEN.hold + EVEN.fade;
         const position = Math.min(Math.max(progress, 0), 1) * (total * EVEN.hold + (total - 1) * EVEN.fade);
         const current = Math.min(total - 1, Math.floor(position / span));
         const local = position - current * span;
-        const opacities = Array.from({ length: total }, (_, i) => i === current ? 1 : 0);
 
-        if (current === total - 1 || local <= EVEN.hold) return { opacities, media: current };
-
-        const fade = (local - EVEN.hold) / EVEN.fade;
-        opacities[current] = Math.max(0, 1 - fade * 2);
-        opacities[current + 1] = Math.max(0, fade * 2 - 1);
-
-        return { opacities, media: fade < 0.5 ? current : current + 1 };
+        return current < total - 1 && local > EVEN.hold + EVEN.fade / 2 ? current + 1 : current;
     };
 
     const handlePanels = (self) => {
@@ -62,6 +56,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
         const fadeTo = contents.map(content => gsap.quickTo(content, 'opacity', { duration: 0.3, ease: 'power1.out' }));
         const mobileQuery = window.matchMedia('(max-width: 991px)');
         let activeMedia = 0;
+        let activeText = 0;
         let media = null;
 
         gsap.set(medias.slice(1), { backgroundColor: 'transparent' });
@@ -78,18 +73,33 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
                 media.show(activeMedia);
             });
 
-        const update = (progress) => {
-            const isMobile = mobileQuery.matches;
-            const even = isMobile ? getEvenState(progress, panels.length) : null;
-            const opacities = even ? even.opacities : getOpacities(progress, panels.length);
+        const showText = (index) => {
+            if (index === activeText) return;
+            activeText = index;
 
-            opacities.forEach((opacity, i) => {
-                if (isMobile) gsap.set(contents[i], { opacity, overwrite: true });
-                else fadeTo[i](opacity);
-                contents[i].style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
+            contents.forEach((content, i) => {
+                const isActive = i === index;
+                content.style.pointerEvents = isActive ? 'auto' : 'none';
+
+                gsap.to(content, isActive
+                    ? { opacity: 1, duration: TEXT.inDuration, delay: TEXT.inDelay, ease: TEXT.inEase, overwrite: true }
+                    : { opacity: 0, duration: TEXT.outDuration, ease: TEXT.outEase, overwrite: true });
             });
+        };
 
-            const nextMedia = even ? even.media : Math.min(panels.length - 1, Math.floor(progress * panels.length + (1 - HOLD) / 2));
+        const update = (progress) => {
+            const evenIndex = mobileQuery.matches ? getEvenIndex(progress, panels.length) : null;
+
+            if (evenIndex !== null) {
+                showText(evenIndex);
+            } else {
+                getOpacities(progress, panels.length).forEach((opacity, i) => {
+                    fadeTo[i](opacity);
+                    contents[i].style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
+                });
+            }
+
+            const nextMedia = evenIndex ?? Math.min(panels.length - 1, Math.floor(progress * panels.length + (1 - HOLD) / 2));
             if (nextMedia === activeMedia) return;
 
             activeMedia = nextMedia;
