@@ -2,8 +2,9 @@ import { defineBlock } from '../app/baunfire.js';
 
 export default defineBlock('section.split-scroll', (els, baunfire) => {
     const STEP = 0.6;
-    const STEP_MOBILE = 0.35;
+    const STEP_MOBILE = 0.6;
     const HOLD = 0.2;
+    const EVEN = { hold: 1, fade: 0.6 };
     const BLOOM = {
         duration: 1.2,
         ease: 'expo-out',
@@ -31,6 +32,22 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
             if (i === current + 1) return Math.max(0, fade * 2 - 1);
             return 0;
         });
+    };
+
+    const getEvenState = (progress, total) => {
+        const span = EVEN.hold + EVEN.fade;
+        const position = Math.min(Math.max(progress, 0), 1) * (total * EVEN.hold + (total - 1) * EVEN.fade);
+        const current = Math.min(total - 1, Math.floor(position / span));
+        const local = position - current * span;
+        const opacities = Array.from({ length: total }, (_, i) => i === current ? 1 : 0);
+
+        if (current === total - 1 || local <= EVEN.hold) return { opacities, media: current };
+
+        const fade = (local - EVEN.hold) / EVEN.fade;
+        opacities[current] = Math.max(0, 1 - fade * 2);
+        opacities[current + 1] = Math.max(0, fade * 2 - 1);
+
+        return { opacities, media: fade < 0.5 ? current : current + 1 };
     };
 
     const handlePanels = (self) => {
@@ -62,8 +79,9 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
             });
 
         const update = (progress) => {
-            const opacities = getOpacities(progress, panels.length);
             const isMobile = mobileQuery.matches;
+            const even = isMobile ? getEvenState(progress, panels.length) : null;
+            const opacities = even ? even.opacities : getOpacities(progress, panels.length);
 
             opacities.forEach((opacity, i) => {
                 if (isMobile) gsap.set(contents[i], { opacity, overwrite: true });
@@ -71,7 +89,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
                 contents[i].style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
             });
 
-            const nextMedia = Math.min(panels.length - 1, Math.floor(progress * panels.length + (1 - HOLD) / 2));
+            const nextMedia = even ? even.media : Math.min(panels.length - 1, Math.floor(progress * panels.length + (1 - HOLD) / 2));
             if (nextMedia === activeMedia) return;
 
             activeMedia = nextMedia;
