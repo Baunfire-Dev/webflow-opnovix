@@ -9,6 +9,19 @@ export const Global = {
         this.observeCollectionLists();
         this.handleHubspotForms();
         this.observeForms();
+        this.observePageHeight();
+    },
+
+    observePageHeight() {
+        let height = document.body.offsetHeight;
+        const refresh = gsap.delayedCall(0.25, () => this.screenSizeChange()).pause();
+
+        new ResizeObserver(() => {
+            const next = document.body.offsetHeight;
+            if (Math.abs(next - height) < 1) return;
+            height = next;
+            refresh.restart(true);
+        }).observe(document.body);
     },
 
     importSwiperScript(callback) {

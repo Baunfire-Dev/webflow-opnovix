@@ -43,6 +43,7 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
         const patterns = panels.map(panel => panel.querySelector('.ss-panel-pattern'));
         const contents = panels.map(panel => panel.querySelector('.ss-panel-content'));
         const fadeTo = contents.map(content => gsap.quickTo(content, 'opacity', { duration: 0.3, ease: 'power1.out' }));
+        const mobileQuery = window.matchMedia('(max-width: 991px)');
         let activeMedia = 0;
         let media = null;
 
@@ -62,9 +63,11 @@ export default defineBlock('section.split-scroll', (els, baunfire) => {
 
         const update = (progress) => {
             const opacities = getOpacities(progress, panels.length);
+            const isMobile = mobileQuery.matches;
 
             opacities.forEach((opacity, i) => {
-                fadeTo[i](opacity);
+                if (isMobile) gsap.set(contents[i], { opacity, overwrite: true });
+                else fadeTo[i](opacity);
                 contents[i].style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
             });
 

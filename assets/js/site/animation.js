@@ -230,10 +230,14 @@ export const Animation = {
             .to(sparkle, { keyframes: { scale: [0.4, 1.4, 1], easeEach: "sine.inOut" }, duration: 1.2, ease: "none" }, 0)
             .set([orbit, sparkle], { rotation: 0 }, 1.2);
 
+        let touchedAt = 0;
+
         const play = () => {
+            if (performance.now() - touchedAt < 800) return;
             if (!tl.isActive()) tl.restart();
         };
 
+        trigger.addEventListener("touchstart", () => { touchedAt = performance.now(); }, { passive: true });
         trigger.addEventListener("mouseenter", play);
         trigger.addEventListener("focus", play);
     },
