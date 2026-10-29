@@ -2,7 +2,7 @@ import { defineBlock } from '../app/baunfire.js';
 
 export default defineBlock('section.team-listing', (els, baunfire) => {
     const ALL = 'all';
-    const REVEAL = { duration: 0.35, distance: 6, stagger: 0.03, ease: 'power2-out' };
+    const REVEAL = { delay: 0.2, duration: 0.4, distance: 16, ease: 'power2-out' };
     let uid = 0;
 
     const script = () => {
@@ -67,7 +67,7 @@ export default defineBlock('section.team-listing', (els, baunfire) => {
 
             gsap.fromTo(shown,
                 { autoAlpha: 0, y: REVEAL.distance },
-                { autoAlpha: 1, y: 0, duration: REVEAL.duration, stagger: REVEAL.stagger, ease: REVEAL.ease, overwrite: true, clearProps: 'transform,opacity,visibility' }
+                { autoAlpha: 1, y: 0, delay: REVEAL.delay, duration: REVEAL.duration, ease: REVEAL.ease, overwrite: true, clearProps: 'transform,opacity,visibility' }
             );
 
             ScrollTrigger.refresh();
@@ -121,8 +121,14 @@ export default defineBlock('section.team-listing', (els, baunfire) => {
             trigger?.focus();
         });
 
+        modal.setAttribute('data-lenis-prevent', '');
+
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) close();
+            if (e.target !== modal) return;
+
+            const box = modal.getBoundingClientRect();
+            const inside = e.clientX >= box.left && e.clientX <= box.right && e.clientY >= box.top && e.clientY <= box.bottom;
+            if (!inside) close();
         });
 
         modal.querySelector('.tl-modal-close')?.addEventListener('click', close);
@@ -133,7 +139,11 @@ export default defineBlock('section.team-listing', (els, baunfire) => {
 
             const person = card.querySelector('.tl-name')?.textContent.trim() ?? '';
             button.setAttribute('aria-label', `Read ${person}'s bio`);
-            button.addEventListener('click', () => open(card, button));
+
+            card.addEventListener('click', (e) => {
+                if (e.target.closest('a')) return;
+                open(card, button);
+            });
         });
     };
 
