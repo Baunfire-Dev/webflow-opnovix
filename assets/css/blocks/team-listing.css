@@ -1,114 +1,97 @@
 .team-listing {
-    --tl-ease-move: cubic-bezier(0.45, 0.05, 0.55, 1);
     --tl-ease-out: cubic-bezier(0.25, 1, 0.5, 1);
 
     .tl {
-        &-card,
-        &-advisor {
-            @apply cursor-pointer;
+        &-tab {
+            transition:
+                background-color 0.3s var(--tl-ease-out),
+                color 0.3s var(--tl-ease-out);
+        }
 
-            &.is-empty {
-                @apply cursor-auto;
+        &-filter {
+            @apply hidden flex-col;
+            row-gap: 0.25rem;
 
-                .tl-btn {
-                    @apply hidden;
-                }
+            @media (max-width: 47.9375rem) {
+                @apply flex;
             }
+        }
+
+        &-filter-label {
+            @apply uppercase;
+            color: var(--_palette---neutral--graphite);
+        }
+
+        &-filter-select {
+            @apply w-full appearance-none uppercase cursor-pointer;
+            height: 3rem;
+            padding: 0 2.5rem 0 0.8125rem;
+            border: 1px solid var(--_palette---neutral--stone);
+            border-radius: 0.25rem;
+            color: var(--_palette---neutral--charcoal);
+            background-color: var(--_palette---neutral--white);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 5' fill='none'%3E%3Cpath d='M1 0.5L5 4.5L9 0.5' stroke='%23191B1A' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.8125rem center;
+            background-size: 0.625rem auto;
+
+            &:focus {
+                outline: none;
+                border-color: var(--_palette---brand--coral);
+            }
+        }
+
+        &-card.is-hidden {
+            @apply hidden;
         }
 
         &-btn-icon {
-            transition: transform 0.2s var(--tl-ease-out);
+            transition: transform 0.3s var(--tl-ease-out);
         }
 
-        &-card-overlay {
-            @apply overflow-y-auto invisible opacity-0;
-            transition:
-                opacity 0.25s var(--tl-ease-out),
-                visibility 0s linear 0.25s;
+        &-card:hover .tl-btn-icon {
+            transform: rotate(90deg);
         }
 
-        &-card-bio {
-            @apply opacity-0;
-            transform: translateY(0.5rem);
-            transition:
-                opacity 0.3s var(--tl-ease-out),
-                transform 0.3s var(--tl-ease-out);
-        }
+        &-modal {
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10.392'%3E%3Cpath d='M3 0h6l3 5.196-3 5.196H3L0 5.196z' fill='%23E3E1DE'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10.392'%3E%3Cpath d='M3 0h6l3 5.196-3 5.196H3L0 5.196z' fill='%23E3E1DE'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10.392'%3E%3Cpath d='M3 0h6l3 5.196-3 5.196H3L0 5.196z' fill='%23E3E1DE'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10.392'%3E%3Cpath d='M3 0h6l3 5.196-3 5.196H3L0 5.196z' fill='%23E3E1DE'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: 0.75rem auto;
+            background-position:
+                left 1.5rem top 1.5rem,
+                right 1.5rem top 1.5rem,
+                left 1.5rem bottom 1.5rem,
+                right 1.5rem bottom 1.5rem;
 
-        &-card.is-open {
-            .tl {
-                &-card-overlay {
-                    @apply visible opacity-100;
-                    transition:
-                        opacity 0.25s var(--tl-ease-out),
-                        visibility 0s linear 0s;
-                }
+            &[open] {
+                animation: tlModalIn 0.4s var(--tl-ease-out);
+            }
 
-                &-card-bio {
-                    @apply opacity-100;
-                    transform: translateY(0);
-                    transition:
-                        opacity 0.3s var(--tl-ease-out) 0.06s,
-                        transform 0.3s var(--tl-ease-out) 0.06s;
-                }
-
-                &-btn-icon {
-                    transform: rotate(45deg);
-                }
+            &::backdrop {
+                background-color: rgb(25 27 26 / 0.4);
+                animation: tlBackdropIn 0.4s var(--tl-ease-out);
             }
         }
 
-        &-advisor {
-            @apply items-start;
-
-            .tl-btn {
-                margin-top: 1.3125rem;
-                transition: margin-top 0.3s var(--tl-ease-move);
-            }
+        &-modal-bio > * {
+            @apply m-0;
         }
+    }
+}
 
-        &-advisor-body {
-            padding-top: 0.9375rem;
-            transition: padding-top 0.3s var(--tl-ease-move);
-        }
+@keyframes tlModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(1rem) scale(0.98);
+    }
+}
 
-        &-advisor-bio {
-            grid-template-rows: 0fr;
-            transition: grid-template-rows 0.3s var(--tl-ease-move);
-        }
-
-        &-advisor-bio-inner {
-            @apply invisible opacity-0;
-            transition:
-                opacity 0.2s var(--tl-ease-out),
-                visibility 0s linear 0.3s;
-        }
-
-        &-advisor.is-open {
-            .tl {
-                &-advisor-body {
-                    padding-top: 0;
-                }
-
-                &-btn {
-                    margin-top: 0;
-                }
-
-                &-advisor-bio {
-                    grid-template-rows: 1fr;
-                }
-
-                &-advisor-bio-inner {
-                    @apply visible opacity-100;
-                    transition:
-                        opacity 0.3s var(--tl-ease-out) 0.1s,
-                        visibility 0s linear 0s;
-                }
-
-                &-btn-icon {
-                    transform: rotate(45deg);
-                }
-            }
-        }
+@keyframes tlBackdropIn {
+    from {
+        opacity: 0;
     }
 }
