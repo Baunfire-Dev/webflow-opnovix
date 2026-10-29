@@ -9,9 +9,12 @@
             }
 
             &.is-compact .cc {
-                &-tick,
-                &-pill text {
+                &-tick {
                     font-size: 0.75rem;
+                }
+
+                &-pill text {
+                    font-size: 0.625rem;
                 }
             }
         }
