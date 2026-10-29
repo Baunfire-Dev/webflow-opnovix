@@ -34,8 +34,11 @@ export default defineBlock('section.team-listing', (els, baunfire) => {
             tab.setAttribute('type', 'button');
         });
 
+        const memberships = getMemberships(self);
+
         cards.forEach(card => {
-            card.dataset.roles = [...card.querySelectorAll('.tl-card-role')].map(role => slugify(role.textContent)).join(' ');
+            const slug = card.querySelector('.tl-card-slug')?.textContent.trim() ?? '';
+            card.dataset.roles = (memberships.get(slug) ?? []).join(' ');
         });
 
         let select = null;
@@ -73,6 +76,21 @@ export default defineBlock('section.team-listing', (els, baunfire) => {
         tabs.forEach(tab => tab.addEventListener('click', () => setFilter(tab.dataset.role)));
 
         handleModal(self, cards);
+    };
+
+    const getMemberships = (self) => {
+        const memberships = new Map();
+
+        self.querySelectorAll('.tl-role-list').forEach(list => {
+            const role = list.dataset.role;
+
+            list.querySelectorAll('.tl-role-member').forEach(member => {
+                const slug = member.textContent.trim();
+                memberships.set(slug, [...(memberships.get(slug) ?? []), role]);
+            });
+        });
+
+        return memberships;
     };
 
     const handleModal = (self, cards) => {
