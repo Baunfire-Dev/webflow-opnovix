@@ -13,7 +13,7 @@
         }
 
         &-ring-progress {
-            transition: stroke-dashoffset 0.8s var(--ra-ease);
+            transition: stroke-dashoffset 0.6s var(--ra-ease);
         }
 
         &-ring-stop {
@@ -80,36 +80,36 @@
         &-item {
             #ra-item-number {
                 opacity: 0.52;
-                transition: opacity 0.4s var(--ra-ease);
+                transition: opacity 0.3s var(--ra-ease);
             }
 
             &-title span {
                 opacity: 0.84;
                 transition:
-                    font-size 0.4s var(--ra-ease),
-                    opacity 0.4s var(--ra-ease);
+                    font-size 0.3s var(--ra-ease),
+                    opacity 0.3s var(--ra-ease);
             }
 
             &-content {
                 grid-template-rows: 0fr;
-                transition: grid-template-rows 0.8s var(--ra-ease);
+                transition: grid-template-rows 0.6s var(--ra-ease);
             }
 
             &-content-outer {
                 @apply min-h-0 overflow-hidden opacity-0;
-                transition: opacity 0.3s var(--ra-ease);
+                transition: opacity 0.225s var(--ra-ease);
             }
 
             &-icon {
                 opacity: 0.52;
                 transition:
-                    opacity 0.8s var(--ra-ease),
-                    transform 0.8s var(--ra-ease);
+                    opacity 0.6s var(--ra-ease),
+                    transform 0.6s var(--ra-ease);
             }
 
             &-icon-vertical {
                 scale: 1;
-                transition: scale 0.8s var(--ra-ease);
+                transition: scale 0.6s var(--ra-ease);
             }
 
             &.active {
@@ -129,7 +129,7 @@
 
                     &-content-outer {
                         @apply opacity-100;
-                        transition: opacity 0.6s var(--ra-ease) 0.2s;
+                        transition: opacity 0.45s var(--ra-ease) 0.15s;
                     }
 
                     &-icon {

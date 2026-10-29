@@ -91,7 +91,7 @@ export default defineBlock('section.content-chart', (els, baunfire) => {
 
     const COMPACT_BELOW = 560;
     const GRADIENT_END = 0.75;
-    const POINT_STAGGER = 0.03;
+    const POINT_STAGGER = 0.0225;
 
     const script = () => {
         els.forEach((self, index) => {
@@ -270,11 +270,11 @@ export default defineBlock('section.content-chart', (els, baunfire) => {
         const fullWidth = Number(mount.querySelector('.cc-svg').getAttribute('width')) + 20;
 
         return gsap.timeline()
-            .to(mount.querySelector('.cc-grid'), { opacity: 1, duration: 0.2, ease: 'none' })
-            .to(clips, { attr: { width: fullWidth }, duration: 0.9, ease: 'power2.inOut', stagger: 0.15 })
-            .to(mount.querySelectorAll('.cc-area'), { opacity: 1, duration: 0.4, ease: 'power1.out' }, '-=0.2')
-            .to(markers, { scale: 1, duration: 0.4, ease: 'back.out(2)', stagger: POINT_STAGGER }, '-=0.1')
-            .to(mount.querySelector('.cc-bracket'), { opacity: 1, duration: 0.4, ease: 'power1.out' }, '-=0.2');
+            .to(mount.querySelector('.cc-grid'), { opacity: 1, duration: 0.15, ease: 'none' })
+            .to(clips, { attr: { width: fullWidth }, duration: 0.675, ease: 'power2.inOut', stagger: 0.1125 })
+            .to(mount.querySelectorAll('.cc-area'), { opacity: 1, duration: 0.3, ease: 'power1.out' }, '-=0.15')
+            .to(markers, { scale: 1, duration: 0.3, ease: 'back.out(2)', stagger: POINT_STAGGER }, '-=0.075')
+            .to(mount.querySelector('.cc-bracket'), { opacity: 1, duration: 0.3, ease: 'power1.out' }, '-=0.15');
     };
 
     const createScale = (width, layout) => {

@@ -3,7 +3,7 @@ import { defineBlock } from '../app/baunfire.js';
 export default defineBlock('section.ring-accordion', (els) => {
     const RADIUS = 140;
     const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-    const RING_DURATION = 800;
+    const RING_DURATION = 600;
     const LABEL_FADE = 200;
     const STOP_DELAY = RING_DURATION * 0.6;
     const GLOW_DELAY = RING_DURATION * 0.35;
