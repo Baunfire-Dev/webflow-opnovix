@@ -2,7 +2,7 @@ import { defineBlock } from '../app/baunfire.js';
 
 export default defineBlock('section.team-listing', (els, baunfire) => {
     const ALL = 'all';
-    const REVEAL = { duration: 0.5, distance: 16, stagger: 0.05, ease: 'power2-out' };
+    const REVEAL = { duration: 0.35, distance: 6, stagger: 0.03, ease: 'power2-out' };
     let uid = 0;
 
     const script = () => {
