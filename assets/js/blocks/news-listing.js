@@ -1,0 +1,119 @@
+import { defineBlock } from '../app/baunfire.js';
+import { prepareNewsCards } from '../helpers/news.js';
+import { customSelect } from '../helpers/dropdown.js';
+
+export default defineBlock('section.news-listing', (els, baunfire) => {
+    const FINSWEET_SRC = 'https://cdn.jsdelivr.net/npm/@finsweet/attributes@2/attributes.js';
+    const MOBILE = window.matchMedia('(max-width: 47.9375rem)');
+    let uid = 0;
+
+    const script = () => {
+        els.forEach(self => handleListing(self));
+        loadFinsweet();
+    };
+
+    const loadFinsweet = () => {
+        if (document.querySelector(`script[src="${FINSWEET_SRC}"]`)) return;
+
+        window.FinsweetAttributes = window.FinsweetAttributes || [];
+        window.FinsweetAttributes.push(['list', (instances) => {
+            instances.forEach(instance => {
+                instance.addHook?.('afterRender', (items) => {
+                    items.forEach(item => item.element && prepareNewsCards(item.element));
+                    baunfire.Global.screenSizeChange();
+                    return items;
+                });
+            });
+            baunfire.Global.screenSizeChange();
+        }]);
+
+        const tag = document.createElement('script');
+        tag.type = 'module';
+        tag.async = true;
+        tag.src = FINSWEET_SRC;
+        tag.setAttribute('fs-list', '');
+        document.body.appendChild(tag);
+    };
+
+    const optionHTML = (radio) => `<option value="${radio.value}">${radio.closest('.nl-tab')?.textContent.trim() ?? ''}</option>`;
+
+    const showHTML = (id, radios) => `
+        <div class="nl-show">
+            <label class="nl-field-label g-caption" for="${id}">Show</label>
+            <select class="nl-select g-caption" id="${id}">
+                ${radios.map(optionHTML).join('')}
+            </select>
+        </div>
+    `;
+
+    const handleListing = (self) => {
+        prepareNewsCards(self);
+
+        const form = self.querySelector('[fs-list-element="filters"]');
+        const tabs = self.querySelector('.nl-tabs');
+        const all = self.querySelector('[data-nl-all]');
+        if (!form || !tabs) return;
+
+        form.addEventListener('submit', (e) => e.preventDefault());
+
+        const radios = [...tabs.querySelectorAll('input[type="radio"]')];
+        radios.forEach(radio => {
+            if (!radio.hasAttribute('data-nl-all')) radio.value = radio.getAttribute('fs-list-value') ?? radio.value;
+        });
+
+        if (all) {
+            all.value = '';
+            all.checked = true;
+            all.setAttribute('fs-list-element', 'clear');
+        }
+
+        const id = `nl-show-${++uid}`;
+        tabs.insertAdjacentHTML('beforebegin', showHTML(id, radios));
+        const select = self.querySelector(`#${id}`);
+        const show = customSelect(select, 'nl');
+
+        const sync = () => {
+            const checked = radios.find(radio => radio.checked) ?? all;
+            if (!checked) return;
+            select.value = checked.value;
+            show.refresh();
+            radios.forEach(radio => radio.closest('.nl-tab')?.classList.toggle('is-active', radio === checked));
+        };
+
+        select.addEventListener('change', () => {
+            const target = radios.find(radio => radio.value === select.value);
+            target?.click();
+        });
+
+        all?.addEventListener('click', () => requestAnimationFrame(() => {
+            all.checked = true;
+            sync();
+        }));
+
+        form.addEventListener('change', sync);
+        sync();
+
+        handleSort(self);
+    };
+
+    const handleSort = (self) => {
+        const sort = self.querySelector('[fs-list-element="sort-trigger"]');
+        if (!sort) return;
+
+        const options = [...sort.options];
+        options.forEach(option => { option.dataset.long = option.textContent; });
+        const dropdown = customSelect(sort, 'nl');
+
+        const label = () => {
+            options.forEach(option => {
+                option.textContent = MOBILE.matches ? (option.dataset.short || option.dataset.long) : option.dataset.long;
+            });
+            dropdown.refresh();
+        };
+
+        MOBILE.addEventListener('change', label);
+        label();
+    };
+
+    script();
+});

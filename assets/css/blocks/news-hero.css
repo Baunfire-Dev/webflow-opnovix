@@ -1,0 +1,82 @@
+.news-hero {
+    --nh-ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+
+    .nh {
+        &-carousel {
+            @apply w-full;
+        }
+
+        &-slide {
+            @apply h-auto;
+        }
+
+        &-card {
+            .news-img {
+                transition: transform 0.6s var(--nh-ease-out);
+            }
+
+            .news-link img {
+                transition: transform 0.3s var(--nh-ease-out);
+            }
+
+            @media (hover: hover) {
+                &:hover .news-img {
+                    transform: scale(1.03);
+                }
+
+                &:hover .news-icon-int {
+                    transform: translateX(0.25rem);
+                }
+
+                &:hover .news-icon-ext {
+                    transform: translate(0.125rem, -0.125rem);
+                }
+            }
+        }
+
+        &-progress {
+            &.is-hidden,
+            &:empty {
+                @apply hidden;
+            }
+        }
+
+        &-bar {
+            @apply relative flex-1 cursor-pointer;
+            height: 0.125rem;
+            padding: 0;
+            border: 0;
+            background-color: var(--_palette---neutral--stone);
+
+            &::after {
+                @apply absolute inset-x-0;
+                content: "";
+                top: -0.75rem;
+                bottom: -0.75rem;
+            }
+
+            &:focus-visible {
+                outline: 1px solid var(--_palette---brand--coral);
+                outline-offset: 0.375rem;
+            }
+        }
+
+        &-bar-fill {
+            @apply absolute inset-0 block origin-left;
+            transform: scaleX(0);
+            background-color: var(--_palette---neutral--charcoal);
+        }
+    }
+
+    .news-cta.w-dyn-bind-empty {
+        @apply hidden;
+    }
+
+    .news-cta:not(.w-dyn-bind-empty, .w-condition-invisible) ~ .news-cta-fallback {
+        @apply hidden;
+    }
+
+    .news-link:has(.news-icon-ext:not(.w-condition-invisible)) .news-icon-int {
+        @apply hidden;
+    }
+}
