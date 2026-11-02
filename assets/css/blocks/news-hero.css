@@ -71,28 +71,4 @@
             background-color: var(--_palette---neutral--charcoal);
         }
     }
-
-    .news-link {
-        .news-cta.w-dyn-bind-empty {
-            @apply hidden;
-        }
-
-        .news-cta.w-dyn-bind-empty ~ .news-cta-fallback {
-            @apply block;
-        }
-
-        .news-icon-ext {
-            @apply hidden;
-        }
-    }
-
-    .is-external .news-link {
-        .news-icon-int {
-            @apply hidden;
-        }
-
-        .news-icon-ext {
-            @apply block;
-        }
-    }
 }

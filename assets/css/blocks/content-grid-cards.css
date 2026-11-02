@@ -1,4 +1,13 @@
 .content-grid-cards {
+    .w-mod-js & .cgc {
+        &-line,
+        &-node,
+        &-relaxed,
+        &-arrow {
+            @apply invisible;
+        }
+    }
+
     .cgc {
         &-svg {
             @apply block h-auto max-w-full overflow-visible;
