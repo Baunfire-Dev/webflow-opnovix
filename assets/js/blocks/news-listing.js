@@ -46,19 +46,35 @@ export default defineBlock('section.news-listing', (els, baunfire) => {
         </div>
     `;
 
+    const normalize = (text) => text.trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+
+    const typeFromLabel = (radio, types) => {
+        const label = radio.closest('.nl-tab')?.textContent.trim() ?? '';
+        const key = normalize(label);
+        const match = types.find(type => [key, key.replace(/s$/, ''), key.replace(/es$/, '')].includes(normalize(type)));
+        return match ?? label.replace(/s$/i, '');
+    };
+
     const handleListing = (self) => {
         prepareNewsCards(self);
 
-        const form = self.querySelector('[fs-list-element="filters"]');
         const tabs = self.querySelector('.nl-tabs');
+        const form = tabs?.closest('form');
         const all = self.querySelector('[data-nl-all]');
         if (!form || !tabs) return;
 
+        self.querySelectorAll('[fs-list-element="filters"]').forEach(el => el.removeAttribute('fs-list-element'));
+        form.setAttribute('fs-list-element', 'filters');
         form.addEventListener('submit', (e) => e.preventDefault());
 
+        const types = [...new Set([...self.querySelectorAll('.nl-tile [fs-list-field="type"]')].map(el => el.textContent.trim()))];
         const radios = [...tabs.querySelectorAll('input[type="radio"]')];
+
         radios.forEach(radio => {
-            if (!radio.hasAttribute('data-nl-all')) radio.value = radio.getAttribute('fs-list-value') ?? radio.value;
+            if (radio.hasAttribute('data-nl-all')) return;
+            radio.setAttribute('fs-list-field', 'type');
+            radio.value = radio.getAttribute('fs-list-value')?.trim() || typeFromLabel(radio, types);
+            radio.setAttribute('fs-list-value', radio.value);
         });
 
         if (all) {

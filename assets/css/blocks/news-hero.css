@@ -6,6 +6,10 @@
             @apply w-full;
         }
 
+        &-list {
+            @apply flex-row gap-0;
+        }
+
         &-slide {
             @apply h-auto;
         }
@@ -68,15 +72,27 @@
         }
     }
 
-    .news-cta.w-dyn-bind-empty {
-        @apply hidden;
+    .news-link {
+        .news-cta.w-dyn-bind-empty {
+            @apply hidden;
+        }
+
+        .news-cta.w-dyn-bind-empty ~ .news-cta-fallback {
+            @apply block;
+        }
+
+        .news-icon-ext {
+            @apply hidden;
+        }
     }
 
-    .news-cta:not(.w-dyn-bind-empty, .w-condition-invisible) ~ .news-cta-fallback {
-        @apply hidden;
-    }
+    .is-external .news-link {
+        .news-icon-int {
+            @apply hidden;
+        }
 
-    .news-link:has(.news-icon-ext:not(.w-condition-invisible)) .news-icon-int {
-        @apply hidden;
+        .news-icon-ext {
+            @apply block;
+        }
     }
 }

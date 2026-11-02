@@ -8,7 +8,7 @@ export const prepareNewsCards = (root) => {
     });
 
     root.querySelectorAll('[data-external-url]').forEach(card => {
-        const url = card.dataset.externalUrl.trim();
+        const url = card.dataset.externalUrl?.trim();
         const icon = card.querySelector('.news-icon-ext');
         const external = Boolean(url && icon && !icon.classList.contains('w-condition-invisible'));
 
