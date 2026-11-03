@@ -1,0 +1,22 @@
+.news-detail-hero {
+    --ndh-ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+
+    .nd {
+        &-back-icon {
+            transition: translate 0.3s var(--ndh-ease-out);
+        }
+
+        &-back {
+            &:focus-visible {
+                outline: 1px solid var(--_palette---brand--coral);
+                outline-offset: 0.25rem;
+            }
+
+            @media (hover: hover) {
+                &:hover .nd-back-icon {
+                    translate: -0.25rem 0;
+                }
+            }
+        }
+    }
+}
