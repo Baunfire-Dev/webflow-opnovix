@@ -115,6 +115,7 @@ export default defineBlock('section.content-chart', (els, baunfire) => {
             mount.classList.toggle('is-compact', layout === LAYOUT.compact);
             mount.innerHTML = chartHTML(id, width, layout);
             fitPills(mount, layout);
+            fitTicks(mount, width);
             if (!played) setHidden(mount);
         };
 
@@ -172,7 +173,7 @@ export default defineBlock('section.content-chart', (els, baunfire) => {
                 <text class="cc-tick" x="${layout.labelX}" y="${scale.y(tick)}" text-anchor="end" dominant-baseline="middle">${tick}</text>
             `).join('')}
             ${layout.xTicks.map(tick => `
-                <text class="cc-tick" x="${scale.x(tick)}" y="${round(floorY + layout.labelOffset)}" text-anchor="middle" dominant-baseline="middle">${tick}${layout.unit}</text>
+                <text class="cc-tick is-x" x="${scale.x(tick)}" y="${round(floorY + layout.labelOffset)}" text-anchor="middle" dominant-baseline="middle">${xLabel(tick, layout)}</text>
             `).join('')}
             <text class="cc-tick" x="${layout.labelX}" y="${layout.titleY}" text-anchor="end" dominant-baseline="middle">${Y_AXIS.title}</text>
         </g>
@@ -238,6 +239,23 @@ export default defineBlock('section.content-chart', (els, baunfire) => {
                 <text x="${x}" y="${y}" dominant-baseline="middle">${label.text}</text>
             </g>
         `;
+    };
+
+    const xLabel = (tick, layout) => {
+        const offset = tick - layout.xTicks[0];
+        return offset ? `T₀ + ${offset}${layout.unit}` : 'T₀';
+    };
+
+    const fitTicks = (mount, width) => {
+        const ticks = [...mount.querySelectorAll('.cc-tick.is-x')];
+        if (ticks.length < 2) return;
+
+        const first = Number(ticks[0].getAttribute('x'));
+        const last = width - ticks.at(-1).getBBox().width / 2;
+
+        ticks.forEach((tick, i) => {
+            tick.setAttribute('x', round(first + (last - first) * i / (ticks.length - 1)));
+        });
     };
 
     const fitPills = (mount, layout) => {
