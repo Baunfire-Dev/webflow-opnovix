@@ -110,6 +110,22 @@ export default defineBlock('section.news-listing', (els, baunfire) => {
         sync();
 
         handleSort(self);
+        handleEmpty(self);
+    };
+
+    const handleEmpty = (self) => {
+        const list = self.querySelector('.nl-grid');
+        const empty = self.querySelector('[data-nl-empty]');
+        if (!list || !empty) return;
+
+        const update = () => {
+            const isEmpty = !list.querySelector('.nl-item');
+            self.classList.toggle('is-empty', isEmpty);
+            empty.classList.toggle('is-visible', isEmpty);
+        };
+
+        new MutationObserver(update).observe(list, { childList: true });
+        update();
     };
 
     const handleSort = (self) => {

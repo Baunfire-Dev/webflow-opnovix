@@ -207,6 +207,14 @@
         }
     }
 
+    .nl-empty:not(.is-visible) {
+        @apply hidden;
+    }
+
+    &.is-empty :is(.nl-list-wrap, .nl-pagination) {
+        @apply hidden;
+    }
+
     .nl-dd.is-open {
         .nl-dd-btn {
             border-color: var(--_palette---neutral--charcoal);
