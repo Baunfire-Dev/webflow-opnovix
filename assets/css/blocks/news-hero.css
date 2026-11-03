@@ -11,10 +11,20 @@
         }
 
         &-slide {
-            @apply h-auto;
+            @apply flex h-auto;
         }
 
         &-card {
+            @media (max-width: 47.9375rem) {
+                .nh-card-copy {
+                    justify-content: flex-start;
+                }
+
+                .news-link {
+                    margin-top: auto;
+                }
+            }
+
             .news-img {
                 transition: transform 0.6s var(--nh-ease-out);
             }
