@@ -1,147 +1,147 @@
 .ring-accordion {
-    --ra-ease: cubic-bezier(0.65, 0, 0.35, 1);
-    --ra-ring-bg: #5b183f;
+	--ra-ease: cubic-bezier(0.65, 0, 0.35, 1);
+	--ra-ring-bg: #5b183f;
 
-    .ra {
-        &-ring-labels {
-            @apply absolute inset-0 flex flex-col items-center justify-center gap-1 text-center pointer-events-none;
-            padding: 0 18%;
-        }
+	.ra {
+		&-ring-labels {
+			@apply absolute inset-0 flex flex-col items-center justify-center gap-1 text-center pointer-events-none;
+			padding: 0 18%;
+		}
 
-        &-ring {
-            @apply block w-full h-auto overflow-visible;
-        }
+		&-ring {
+			@apply block w-full h-auto overflow-visible;
+		}
 
-        &-ring-progress {
-            transition: stroke-dashoffset 0.6s var(--ra-ease);
-        }
+		&-ring-progress {
+			transition: stroke-dashoffset 0.6s var(--ra-ease);
+		}
 
-        &-ring-stop {
-            fill: var(--ra-ring-bg);
-            stroke: rgba(255, 255, 255, 0.4);
-            transform-box: fill-box;
-            transform-origin: center;
-            transition:
-                fill 0.4s var(--ra-ease),
-                stroke 0.4s var(--ra-ease),
-                transform 0.4s var(--ra-ease);
+		&-ring-stop {
+			fill: var(--ra-ring-bg);
+			stroke: rgba(255, 255, 255, 0.4);
+			transform-box: fill-box;
+			transform-origin: center;
+			transition:
+				fill 0.4s var(--ra-ease),
+				stroke 0.4s var(--ra-ease),
+				transform 0.4s var(--ra-ease);
 
-            &.is-start {
-                fill: #f9a98a;
-                stroke: transparent;
-            }
+			&.is-start {
+				fill: #f9a98a;
+				stroke: transparent;
+			}
 
-            &.is-passed {
-                fill: #f9a98a;
-                stroke: transparent;
-            }
+			&.is-passed {
+				fill: #f9a98a;
+				stroke: transparent;
+			}
 
-            &.is-active {
-                fill: #ff696a;
-                stroke: transparent;
-                transform: scale(1.6);
-            }
-        }
+			&.is-active {
+				fill: #ff696a;
+				stroke: transparent;
+				transform: scale(1.6);
+			}
+		}
 
-        &-ring-glow {
-            @apply opacity-0;
-            transform: scale(0.4);
-            transform-box: fill-box;
-            transform-origin: center;
-            transition:
-                opacity 0.3s var(--ra-ease),
-                transform 0.3s var(--ra-ease);
+		&-ring-glow {
+			@apply opacity-0;
+			transform: scale(0.4);
+			transform-box: fill-box;
+			transform-origin: center;
+			transition:
+				opacity 0.3s var(--ra-ease),
+				transform 0.3s var(--ra-ease);
 
-            &.is-visible {
-                @apply opacity-100;
-                transform: scale(1);
-                transition:
-                    opacity 0.6s var(--ra-ease),
-                    transform 0.6s var(--ra-ease);
-            }
-        }
+			&.is-visible {
+				@apply opacity-100;
+				transform: scale(1);
+				transition:
+					opacity 0.6s var(--ra-ease),
+					transform 0.6s var(--ra-ease);
+			}
+		}
 
-        &-ring-label {
-            transition: opacity 0.2s var(--ra-ease);
+		&-ring-label {
+			transition: opacity 0.2s var(--ra-ease);
 
-            &.is-hidden {
-                @apply opacity-0;
-            }
-        }
+			&.is-hidden {
+				@apply opacity-0;
+			}
+		}
 
-        &-ring-title {
-            @apply text-white;
-        }
+		&-ring-title {
+			@apply text-white;
+		}
 
-        &-ring-count {
-            color: rgba(255, 255, 255, 0.52);
-        }
+		&-ring-count {
+			color: rgba(255, 255, 255, 0.52);
+		}
 
-        &-item {
-            #ra-item-number {
-                opacity: 0.52;
-                transition: opacity 0.3s var(--ra-ease);
-            }
+		&-item {
+			&-title span {
+				opacity: 0.84;
+				transition:
+					font-size 0.3s var(--ra-ease),
+					opacity 0.3s var(--ra-ease);
+			}
 
-            &-title span {
-                opacity: 0.84;
-                transition:
-                    font-size 0.3s var(--ra-ease),
-                    opacity 0.3s var(--ra-ease);
-            }
+			&-content {
+				grid-template-rows: 0fr;
+				transition: grid-template-rows 0.6s var(--ra-ease);
+			}
 
-            &-content {
-                grid-template-rows: 0fr;
-                transition: grid-template-rows 0.6s var(--ra-ease);
-            }
+			&-content-outer {
+				@apply min-h-0 overflow-hidden opacity-0;
+				transition: opacity 0.225s var(--ra-ease);
+			}
 
-            &-content-outer {
-                @apply min-h-0 overflow-hidden opacity-0;
-                transition: opacity 0.225s var(--ra-ease);
-            }
+			&-icon {
+				opacity: 0.52;
+				transition:
+					opacity 0.6s var(--ra-ease),
+					transform 0.6s var(--ra-ease);
+			}
 
-            &-icon {
-                opacity: 0.52;
-                transition:
-                    opacity 0.6s var(--ra-ease),
-                    transform 0.6s var(--ra-ease);
-            }
+			&-icon-vertical {
+				scale: 1;
+				transition: scale 0.6s var(--ra-ease);
+			}
 
-            &-icon-vertical {
-                scale: 1;
-                transition: scale 0.6s var(--ra-ease);
-            }
+            &-number {
+				opacity: 0.52;
+				transition: opacity 0.3s var(--ra-ease);
+			}
 
-            &.active {
-                #ra-item-number {
-                    @apply opacity-100;
-                }
+			&.active {
+				.ra-item {
+					&-title span {
+						@apply opacity-100;
+						font-size: var(--_typography---size--h4);
+					}
 
-                .ra-item {
-                    &-title span {
-                        @apply opacity-100;
-                        font-size: var(--_typography---size--h4);
-                    }
+					&-content {
+						grid-template-rows: 1fr;
+					}
 
-                    &-content {
-                        grid-template-rows: 1fr;
-                    }
+					&-content-outer {
+						@apply opacity-100;
+						transition: opacity 0.45s var(--ra-ease) 0.15s;
+					}
 
-                    &-content-outer {
-                        @apply opacity-100;
-                        transition: opacity 0.45s var(--ra-ease) 0.15s;
-                    }
+					&-icon {
+						@apply opacity-100;
+						transform: rotate(360deg);
+					}
 
-                    &-icon {
-                        @apply opacity-100;
-                        transform: rotate(360deg);
-                    }
+					&-icon-vertical {
+						scale: 0;
+					}
 
-                    &-icon-vertical {
-                        scale: 0;
-                    }
-                }
-            }
-        }
-    }
+					&-number {
+						@apply opacity-100;
+					}
+				}
+			}
+		}
+	}
 }

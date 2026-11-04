@@ -37,7 +37,7 @@ export default defineBlock('section.ring-accordion', (els) => {
         };
 
         items.forEach((item, index) => {
-            const number = item.querySelector('#ra-item-number');
+            const number = item.querySelector('.ra-item-number');
             if (number) number.textContent = pad(index + 1);
 
             if (item.classList.contains('active')) activeIndex = index;
