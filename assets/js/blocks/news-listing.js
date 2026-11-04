@@ -5,6 +5,7 @@ import { customSelect } from '../helpers/dropdown.js';
 export default defineBlock('section.news-listing', (els, baunfire) => {
     const FINSWEET_SRC = 'https://cdn.jsdelivr.net/npm/@finsweet/attributes@2/attributes.js';
     const MOBILE = window.matchMedia('(max-width: 47.9375rem)');
+    const typeSyncs = new Map();
     let uid = 0;
 
     const script = () => {
@@ -18,6 +19,12 @@ export default defineBlock('section.news-listing', (els, baunfire) => {
         window.FinsweetAttributes = window.FinsweetAttributes || [];
         window.FinsweetAttributes.push(['list', (instances) => {
             instances.forEach(instance => {
+                instance.addHook?.('filter', (items) => {
+                    const block = items?.[0]?.element?.closest('section.news-listing');
+                    typeSyncs.get(block)?.(items.map(item => item.element));
+                    return items;
+                });
+
                 instance.addHook?.('afterRender', (items) => {
                     items.forEach(item => item.element && prepareNewsCards(item.element));
                     baunfire.Global.screenSizeChange();
@@ -109,8 +116,36 @@ export default defineBlock('section.news-listing', (els, baunfire) => {
         form.addEventListener('change', sync);
         sync();
 
+        handleTypes(self, radios, select, show);
         handleSort(self);
         handleEmpty(self);
+    };
+
+    const typesIn = (elements) => elements
+        .filter(Boolean)
+        .flatMap(el => [...el.querySelectorAll('.nl-tile [fs-list-field="type"]')])
+        .map(el => normalize(el.textContent));
+
+    const handleTypes = (self, radios, select, show) => {
+        const present = new Set(typesIn([self]));
+
+        const update = (elements = []) => {
+            typesIn(elements).forEach(type => present.add(type));
+
+            radios.forEach(radio => {
+                if (radio.hasAttribute('data-nl-all')) return;
+                const visible = present.has(normalize(radio.value));
+                radio.closest('.nl-tab')?.classList.toggle('is-hidden', !visible);
+                const option = [...select.options].find(item => item.value === radio.value);
+                if (option) option.hidden = !visible;
+            });
+
+            show.refresh();
+            self.classList.add('is-types-ready');
+        };
+
+        typeSyncs.set(self, update);
+        update();
     };
 
     const handleEmpty = (self) => {

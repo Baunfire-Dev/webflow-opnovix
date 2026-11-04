@@ -42,13 +42,17 @@ export const customSelect = (select, prefix) => {
         const options = [...select.options];
         items.forEach((item, i) => {
             item.textContent = options[i]?.textContent.trim() ?? '';
+            item.hidden = Boolean(options[i]?.hidden);
             item.setAttribute('aria-selected', String(i === select.selectedIndex));
         });
         value.textContent = options[select.selectedIndex]?.textContent.trim() ?? '';
     };
 
-    const highlight = (index) => {
-        active = (index + items.length) % items.length;
+    const highlight = (index, step = 1) => {
+        const total = items.length;
+        let next = (index + total) % total;
+        for (let n = 0; n < total && items[next].hidden; n++) next = (next + step + total) % total;
+        active = next;
         items.forEach((item, i) => item.classList.toggle('is-active', i === active));
         list.setAttribute('aria-activedescendant', items[active].id);
         items[active].scrollIntoView({ block: 'nearest' });
@@ -89,9 +93,9 @@ export const customSelect = (select, prefix) => {
 
     list.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowDown') highlight(active + 1);
-        else if (e.key === 'ArrowUp') highlight(active - 1);
+        else if (e.key === 'ArrowUp') highlight(active - 1, -1);
         else if (e.key === 'Home') highlight(0);
-        else if (e.key === 'End') highlight(items.length - 1);
+        else if (e.key === 'End') highlight(items.length - 1, -1);
         else if (e.key === 'Enter' || e.key === ' ') choose(active);
         else if (e.key === 'Escape' || e.key === 'Tab') return close(e.key === 'Escape');
         else return;

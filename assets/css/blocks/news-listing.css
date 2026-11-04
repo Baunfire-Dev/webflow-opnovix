@@ -207,6 +207,14 @@
         }
     }
 
+    &:not(.is-types-ready) .nl-types {
+        visibility: hidden;
+    }
+
+    .nl-tab.is-hidden {
+        @apply hidden;
+    }
+
     .nl-empty:not(.is-visible) {
         @apply hidden;
     }
