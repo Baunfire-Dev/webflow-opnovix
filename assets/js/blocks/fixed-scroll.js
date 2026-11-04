@@ -10,7 +10,7 @@ export default defineBlock('section.fixed-scroll', (els, baunfire) => {
         { size: 310, color: GRAY },
         { size: 355, color: '#3A58EF' },
         { size: 400, color: '#38CA73' },
-        { size: 446, color: '#FF696A' }
+        // { size: 446, color: '#FF696A' }
     ];
 
     const BACK_LINES = [
