@@ -11,6 +11,7 @@ export default defineBlock('section.news-detail-hero', (els) => {
         const el = document.querySelector('[data-redirect-url]');
         const url = el?.dataset.redirectUrl?.trim();
         if (!url || el.classList.contains('w-condition-invisible')) return false;
+        document.head.insertAdjacentHTML('beforeend', '<meta name="robots" content="noindex, follow">');
         window.location.replace(url);
         return true;
     };
