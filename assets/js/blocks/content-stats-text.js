@@ -10,9 +10,6 @@ export default defineBlock('section.content-stats-text', (els, baunfire) => {
         stagger: 0.12,
         ease: 'power2-out',
         paraOffset: 0.25,
-        lineOffset: 0.4,
-        lineDuration: 0.7,
-        lineEase: 'signature',
         start: 'top 80%',
         desktop: '(min-width: 992px)'
     };
@@ -57,8 +54,7 @@ export default defineBlock('section.content-stats-text', (els, baunfire) => {
 
         gsap.timeline()
             .fromTo(words, from, to, 0)
-            .fromTo(paras, from, to, WORDS.paraOffset)
-            .fromTo(words, { '--cst-line': 0 }, { '--cst-line': 1, duration: WORDS.lineDuration, stagger: WORDS.stagger, ease: WORDS.lineEase }, WORDS.lineOffset);
+            .fromTo(paras, from, to, WORDS.paraOffset);
     };
 
     const handleStats = (self) => {
