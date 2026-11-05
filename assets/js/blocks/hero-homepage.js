@@ -29,7 +29,6 @@ export default defineBlock('section.hero-homepage', (els) => {
 
     const TEXT = {
         delay: 0.2,
-        mobileDelay: 0,
         duration: 1.2,
         distance: 32,
         stagger: 0.12,
@@ -63,14 +62,14 @@ export default defineBlock('section.hero-homepage', (els) => {
         const items = self.querySelectorAll('.hh-content-inner > *, .hh-ctas');
         if (!items.length) return;
 
-        if (!gsap) {
+        if (!gsap || window.matchMedia(MOBILE_QUERY).matches) {
             items.forEach(item => item.style.cssText += 'opacity: 1; visibility: visible;');
             return;
         }
 
         gsap.fromTo(items,
             { autoAlpha: 0, y: TEXT.distance },
-            { autoAlpha: 1, y: 0, duration: TEXT.duration, delay: window.matchMedia(MOBILE_QUERY).matches ? TEXT.mobileDelay : TEXT.delay, stagger: TEXT.stagger, ease: TEXT.ease }
+            { autoAlpha: 1, y: 0, duration: TEXT.duration, delay: TEXT.delay, stagger: TEXT.stagger, ease: TEXT.ease }
         );
     };
 

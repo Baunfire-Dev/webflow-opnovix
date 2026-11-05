@@ -74,7 +74,7 @@
 		}
 
 		&-ring-count {
-			color: rgba(255, 255, 255, 0.52);
+			color: rgba(255, 255, 255, 0.56);
 		}
 
 		&-item {
@@ -108,7 +108,7 @@
 			}
 
             &-number {
-				opacity: 0.52;
+				opacity: 0.56;
 				transition: opacity 0.3s var(--ra-ease);
 			}
 
