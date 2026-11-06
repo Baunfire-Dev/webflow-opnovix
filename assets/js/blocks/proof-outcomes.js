@@ -59,9 +59,9 @@ export default defineBlock('section.proof-outcomes', (els) => {
             left: 40,
             gridLeft: 40,
             right: 230,
-            xTicks: [700, 720, 740, 760],
+            xTicks: [700, 730, 760],
             yTicks: [420, 460, 500, 540, 580],
-            unit: '',
+            unit: ' °C',
             titles: true,
             labelOffset: 17,
             pad: 40,
@@ -77,7 +77,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
             right: 4,
             xTicks: [700, 730, 760],
             yTicks: [420, 500, 580],
-            unit: '°',
+            unit: ' °C',
             titles: false,
             labelOffset: 17,
             pad: 28,
@@ -145,6 +145,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
                     ? legendHTML(isCompact) + chartHTML(id, width, layout) + footnoteHTML()
                     : chartHTML(id, width, layout) + legendHTML(isCompact) + footnoteHTML();
                 fitPill(mount, layout);
+                fitTicks(mount, width);
             },
             hide: setHidden,
             animate: buildTimeline
@@ -237,7 +238,7 @@ export default defineBlock('section.proof-outcomes', (els) => {
                 <text class="po-tick g-caption" x="${layout.gridLeft - 8}" y="${scale.y(tick)}" text-anchor="end" dominant-baseline="middle">${tick}</text>
             `).join('')}
             ${layout.xTicks.map(tick => `
-                <text class="po-tick g-caption" x="${scale.x(tick)}" y="${floorY + layout.labelOffset}" text-anchor="middle" dominant-baseline="middle">${tick}${layout.unit}</text>
+                <text class="po-tick is-x g-caption" x="${scale.x(tick)}" y="${floorY + layout.labelOffset}" text-anchor="middle" dominant-baseline="middle">${xLabel(tick, layout)}</text>
             `).join('')}
             ${layout.titles ? `
                 <text class="g-caption" x="${layout.gridLeft - 8}" y="7" text-anchor="end" dominant-baseline="middle">${Y_AXIS.title}</text>
@@ -332,6 +333,20 @@ export default defineBlock('section.proof-outcomes', (els) => {
                 `).join('')}
             </ul>
         `;
+    };
+
+    // Growth temperatures are shown relative to the lowest tick (T₀), matching the Technology page chart.
+    const xLabel = (tick, layout) => {
+        const offset = tick - layout.xTicks[0];
+        return offset ? `T₀ + ${offset}${layout.unit}` : 'T₀';
+    };
+
+    // Keep the widest x label ("T₀ + 60 °C") inside the chart instead of spilling past the right edge.
+    const fitTicks = (mount, width) => {
+        mount.querySelectorAll('.po-tick.is-x').forEach(tick => {
+            const box = tick.getBBox();
+            if (box.x + box.width > width) tick.setAttribute('x', round(width - box.width / 2));
+        });
     };
 
     const fitPill = (mount, layout) => {
