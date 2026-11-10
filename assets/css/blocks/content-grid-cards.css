@@ -17,11 +17,11 @@
             }
 
             &.is-ingan {
-                width: 14.1875rem;
+                width: 18rem;
             }
 
             &.is-native {
-                width: 14.0625rem;
+                width: 18.75rem;
             }
         }
     }
